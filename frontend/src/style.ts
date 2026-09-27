@@ -15,6 +15,9 @@ export const ATTRIBUTION = [
   "© OpenStreetMap contributors (ODbL)",
   "Basemap © Protomaps",
   "ADS-B © adsb.lol (ODbL 1.0)",
+  // Vendored map assets: their license texts ship in the edge image (docs/licenses/).
+  '<a href="/licenses/noto-fonts-OFL.txt" target="_blank">Noto Sans (OFL)</a>',
+  '<a href="/licenses/tangrams-icons-MIT.txt" target="_blank">Icons © Mapzen (MIT)</a>',
 ].join(" | ");
 
 function infrastructureLayers(layer: Layer): LayerSpecification[] {

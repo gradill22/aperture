@@ -689,9 +689,6 @@ def phase4() -> bool:
 # --------------------------------------------------------------------------- phase 5
 
 EVIDENCE5 = ROOT / ".verify" / "phase5"
-GITEA_URL = (
-    f"http://localhost:{os.environ.get('GITEA_PORT') or ci.env_value('GITEA_PORT') or '3000'}"
-)
 CI_JOBS = {"egress-check", "lint", "typecheck", "test", "web", "helm", "build"}
 # app.ini (section, key) -> required value: what keeps Gitea from reaching or serving the internet.
 GITEA_SETTINGS = {
@@ -779,63 +776,35 @@ def gitea_edge_ok() -> bool:
     return ok
 
 
-def git_out(*args: str) -> str:
-    res = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=False)
-    return res.stdout.strip() if res.returncode == 0 else ""
-
-
-def gitea_api(path: str) -> tuple[int, str]:
-    """GET the local Gitea API with the host's curl; a read token in ci/.env (GITEA_READ_TOKEN)
-    is sent if present, on stdin so it never appears in a process list."""
-    token = ci.env_value("GITEA_READ_TOKEN")
-    cmd = [
-        "curl",
-        "-s",
-        "-m",
-        "30",
-        "-w",
-        "\n%{http_code}",
-        "-H",
-        "@-",
-        f"{GITEA_URL}/api/v1{path}",
-    ]
-    header = f"Authorization: token {token}\n" if token else ""
-    res = subprocess.run(cmd, input=header, capture_output=True, text=True, encoding="utf-8",
-                         check=False)  # fmt: skip
-    body, _, status = res.stdout.rpartition("\n")
-    return int(status or 0), body
-
-
 def push_head() -> tuple[str, str] | None:
     """Push the committed HEAD to the `gitea` remote; returns (owner/repo, sha)."""
-    url = git_out("remote", "get-url", "gitea")
-    m = re.match(r"^https?://[^/]+/([^/]+/[^/]+?)(?:\.git)?/?$", url)
-    if not m:
-        print(f"  no usable `gitea` remote ({url or 'missing'}); see ci/README.md")
+    repo = ci.gitea_repo()
+    if not repo:
+        print(
+            f"  no usable `gitea` remote ({ci.git_out('remote', 'get-url', 'gitea') or 'missing'}); see ci/README.md"
+        )
         return None
-    if dirty := git_out("status", "--porcelain"):
+    if dirty := ci.git_out("status", "--porcelain"):
         print(
             f"  working tree has {len(dirty.splitlines())} uncommitted change(s): CI tests commits"
         )
         return None
-    sha, branch = git_out("rev-parse", "HEAD"), git_out("branch", "--show-current") or "main"
+    sha, branch = ci.git_out("rev-parse", "HEAD"), ci.git_out("branch", "--show-current") or "main"
     if not run("git", "push", "gitea", f"HEAD:refs/heads/{branch}"):
         return None
-    return m.group(1), sha
+    return repo, sha
 
 
 def wait_for_run(repo: str, sha: str) -> dict | None:
     deadline, last = time.monotonic() + RUN_TIMEOUT_S, ""
     while time.monotonic() < deadline:
-        status, body = gitea_api(f"/repos/{repo}/actions/runs?head_sha={sha}&event=push")
+        status, latest = ci.latest_run(repo, sha)
         if status != 200:
-            print(f"  actions API: HTTP {status} {body[:200]!r}")
+            print(f"  actions API: HTTP {status}")
             if status in (401, 403, 404):
                 print("  (a private repo needs a read token in ci/.env as GITEA_READ_TOKEN)")
             return None
-        runs = [r for r in json.loads(body).get("workflow_runs") or [] if r.get("head_sha") == sha]
-        if runs:
-            latest = max(runs, key=lambda r: r["id"])
+        if latest:
             state = f"run {latest['id']}: {latest.get('status')}"
             if state != last:
                 print(f"  {state}", flush=True)
@@ -853,11 +822,11 @@ def evidence(what: str, good: bool) -> bool:
 
 
 def run_jobs_ok(repo: str, run_: dict) -> bool:
-    status, body = gitea_api(f"/repos/{repo}/actions/runs/{run_['id']}/jobs")
+    status, body = ci.gitea_api(f"/repos/{repo}/actions/runs/{run_['id']}/jobs")
     jobs = (json.loads(body).get("jobs") or []) if status == 200 else []
     logs: dict[str, str] = {}
     for job in jobs:
-        code, text = gitea_api(f"/repos/{repo}/actions/jobs/{job['id']}/logs")
+        code, text = ci.gitea_api(f"/repos/{repo}/actions/jobs/{job['id']}/logs")
         logs[job["name"]] = text if code == 200 else ""
         (EVIDENCE5 / f"{job['name']}.log").write_text(logs[job["name"]], encoding="utf-8")
         print(f"  job {job['name']}: {job.get('conclusion') or job.get('status')}")

@@ -10,6 +10,9 @@ registration, or RUNNER_TOKEN is set in ci/.env (you create that token in the Gi
 
 import hashlib
 import io
+import json
+import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -82,6 +85,44 @@ def env_value(key: str) -> str:
         if k.strip() == key:
             return v.strip()
     return ""
+
+
+def gitea_url() -> str:
+    return f"http://localhost:{os.environ.get('GITEA_PORT') or env_value('GITEA_PORT') or '3000'}"
+
+
+def git_out(*args: str) -> str:
+    res = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=False)
+    return res.stdout.strip() if res.returncode == 0 else ""
+
+
+def gitea_repo() -> str | None:
+    """owner/repo of the `gitea` remote."""
+    m = re.match(
+        r"^https?://[^/]+/([^/]+/[^/]+?)(?:\.git)?/?$", git_out("remote", "get-url", "gitea")
+    )
+    return m.group(1) if m else None
+
+
+def gitea_api(path: str) -> tuple[int, str]:
+    """GET the local Gitea API with the host's curl; a read token in ci/.env (GITEA_READ_TOKEN)
+    is sent if present, on stdin so it never appears in a process list."""
+    token = env_value("GITEA_READ_TOKEN")
+    cmd = ["curl", "-s", "-m", "30", "-w", "\n%{http_code}", "-H", "@-", f"{gitea_url()}/api/v1{path}"]  # fmt: skip
+    header = f"Authorization: token {token}\n" if token else ""
+    res = subprocess.run(cmd, input=header, capture_output=True, text=True, encoding="utf-8",
+                         check=False)  # fmt: skip
+    body, _, status = res.stdout.rpartition("\n")
+    return int(status or 0), body
+
+
+def latest_run(repo: str, sha: str) -> tuple[int, dict | None]:
+    """(HTTP status, the newest push-triggered Actions run for `sha` or None)."""
+    status, body = gitea_api(f"/repos/{repo}/actions/runs?head_sha={sha}&event=push")
+    if status != 200:
+        return status, None
+    runs = [r for r in json.loads(body).get("workflow_runs") or [] if r.get("head_sha") == sha]
+    return status, max(runs, key=lambda r: r["id"]) if runs else None
 
 
 def runner_registered() -> bool:

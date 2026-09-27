@@ -19,5 +19,6 @@ COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /src/frontend/dist /usr/share/nginx/html
 COPY data/tiles/fonts /usr/share/nginx/html/fonts
 COPY data/tiles/sprites /usr/share/nginx/html/sprites
+COPY docs/licenses /usr/share/nginx/html/licenses
 COPY data/snapshot/MANIFEST.json /usr/share/nginx/html/provenance.json
 EXPOSE 8080
