@@ -1,7 +1,8 @@
 # Dev stack. Everything runs on `aperture-internal` (internal: true => no route out, not even
 # to the Docker host). Prerequisite images come from bootstrap/ (see bootstrap/images.lock).
 #
-#   docker compose up -d --build              db -> loader (one-shot) -> backend, mcp-server
+#   docker compose up -d --build              db -> loader (one-shot) -> backend, mcp-server, tiles -> frontend
+#   open http://localhost:8080                 the edge (nginx) is the only published port
 #   docker compose run --rm probe <url>       curl from inside the internal network
 #   docker compose --profile test up -d db-test   fixtures DB for pytest on 127.0.0.1:55432
 name: aperture
@@ -41,6 +42,11 @@ networks:
   # Ordinary bridge: only llm-relay joins it, to reach LM Studio on the Docker host.
   llm-egress:
     name: aperture-llm-egress
+  # Carries only the published port (127.0.0.1:8080 -> frontend). Docker cannot publish ports
+  # from an internal network, so the edge has a route out; Gate 3 proves nginx never uses it
+  # (config audit: internal upstreams only, no resolver; socket table after the e2e run).
+  edge:
+    name: aperture-edge
 
 volumes:
   pgdata:
@@ -94,6 +100,8 @@ services:
     image: aperture/mcp-server:dev
     environment:
       DATABASE_URL: postgresql://aperture:aperture@db:5432/aperture
+      # Host headers accepted (DNS-rebinding guard): direct, and via the edge from host or network.
+      MCP_ALLOWED_HOSTS: localhost:*,127.0.0.1:*,mcp-server:*,frontend:*
     depends_on:
       db: { condition: service_healthy }
       loader: { condition: service_completed_successfully }
@@ -114,6 +122,59 @@ services:
       LLM_UPSTREAM: host.docker.internal:1234
     extra_hosts: ["host.docker.internal:host-gateway"]
     networks: [internal, llm-egress]
+
+  # martin with the snapshot pmtiles baked in.
+  tiles:
+    build:
+      context: .
+      network: none
+      dockerfile: tiles/Dockerfile
+    image: aperture/tiles:dev
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/tiles/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # The edge: SPA + fonts/sprites, reverse proxy to backend, tiles, mcp-server.
+  frontend:
+    build:
+      context: .
+      network: none
+      dockerfile: frontend/Dockerfile
+      args:
+        NODE_DEPS: aperture/node-deps:latest
+    image: aperture/frontend:dev
+    depends_on:
+      backend: { condition: service_healthy }
+      mcp-server: { condition: service_healthy }
+      tiles: { condition: service_healthy }
+    networks: [internal, edge]
+    # Host port: APERTURE_PORT (default 8080).
+    ports: ["127.0.0.1:${APERTURE_PORT:-8080}:8080"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # Playwright, on the internal network only:  docker compose run --rm e2e
+  e2e:
+    build:
+      context: .
+      network: none
+      dockerfile: e2e/Dockerfile
+      args:
+        E2E_DEPS: aperture/e2e-deps:latest
+    image: aperture/e2e:dev
+    profiles: [tools]
+    environment:
+      E2E_BASE_URL: http://frontend:8080
+    volumes:
+      - ./.verify/phase3/e2e:/out
+    shm_size: 1g
+    networks: [internal]
 
   probe:
     image: curlimages/curl@sha256:58adaa4e8dca9c988bae2aba4ab3434a0bb2da16bbe3f92dec39ec7785166777

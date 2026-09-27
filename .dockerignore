@@ -12,4 +12,17 @@
 !relay/llm_relay.py
 !data/snapshot/adsb/
 !data/snapshot/osm/
+!data/aoi.json
+!data/snapshot/MANIFEST.json
+!data/tiles/basemap.pmtiles
+!data/tiles/infrastructure.pmtiles
+!data/tiles/fonts/
+!data/tiles/sprites/
+!frontend/
+!e2e/package.json
+!e2e/package-lock.json
+!e2e/playwright.config.ts
+!e2e/tests/
 **/__pycache__
+**/node_modules
+frontend/dist

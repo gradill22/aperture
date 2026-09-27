@@ -210,6 +210,21 @@ async def get_aircraft(conn: AsyncConnection, icao24: str) -> dict:
     }
 
 
+FLAGS = ("military", "interesting", "pia", "ladd")
+
+
+async def aircraft_flags(conn: AsyncConnection) -> dict[str, list[str]]:
+    """icao24 lists per registry flag, so the map can style replay rows (which carry no flags)."""
+    a = models.aircraft
+    rows = await conn.execute(select(a.c.icao24, *(a.c[f] for f in FLAGS)))
+    out: dict[str, list[str]] = {f: [] for f in FLAGS}
+    for r in rows:
+        for f in FLAGS:
+            if getattr(r, f):
+                out[f].append(r.icao24)
+    return out
+
+
 async def get_feature(conn: AsyncConnection, feature_id: int) -> dict:
     o = models.osm_feature
     surface = func.ST_PointOnSurface(o.c.geom)

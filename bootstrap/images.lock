@@ -14,3 +14,11 @@ curlimages/curl@sha256:58adaa4e8dca9c988bae2aba4ab3434a0bb2da16bbe3f92dec39ec778
 aperture/py-deps:latest  local sha256:ada1159fffc03bff658955f6f25b7e36de92a1574af8515ca7eff2e52619d197  # bootstrap/build_deps.py, lock d6e3a19adbef (Phase 2: + mcp, httpx, tzdata)
 #
 # Phase 2: no new third-party images. llm-relay is stdlib Python on the pinned python:3.14-slim.
+#
+# Phase 3: tiles, edge, frontend toolchain, browser tests
+ghcr.io/maplibre/martin@sha256:59902019bf9038926ff0c71174237d6852e64c457830a6349abe7090be8818ca                # martin 1.16.1 (tiles/Dockerfile)
+nginxinc/nginx-unprivileged@sha256:4714e0b1b2577eaa1a6131d07c958b67f0eb68e6d0521e90c6e5287db8cf0bc5            # 1.30.5-alpine, the edge
+node@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6                                   # node:24-slim
+mcr.microsoft.com/playwright@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27           # v1.63.0-noble
+aperture/node-deps:latest  local sha256:6a83077b29b054a195ed6c0e2c2249407c88159327cfdcc3fbdcb2e1a116f529  # bootstrap/build_deps.py node, lock 6398220f8984
+aperture/e2e-deps:latest   local sha256:8800558c3d3c77f7851479fe18ff7464b37b0c67aa0379e9b50bc8f400c67831  # bootstrap/build_deps.py e2e, lock 35eef1dc8ee0

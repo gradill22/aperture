@@ -81,6 +81,11 @@ async def entities(
     return {"q": q, "results": await queries.search_entities(c, q, kind, layer, limit)}
 
 
+@app.get("/aircraft/flags")
+async def aircraft_flags(c: Conn) -> dict:
+    return await queries.aircraft_flags(c)
+
+
 @app.get("/entities/aircraft/{icao24}")
 async def aircraft(c: Conn, icao24: str) -> dict:
     return await queries.get_aircraft(c, icao24)

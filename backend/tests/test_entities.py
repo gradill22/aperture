@@ -51,3 +51,11 @@ def test_not_found(client):
     assert client.get("/entities/aircraft/zzzzzz").status_code == 404
     assert client.get("/entities/feature/999999999").status_code == 404
     assert client.get("/tracks/zzzzzz").status_code == 404
+
+
+def test_aircraft_flags_match_registry(client, pg):
+    body = client.get("/aircraft/flags").json()
+    for flag in ("military", "interesting", "pia", "ladd"):
+        (n,) = pg.execute(f"SELECT count(*) FROM aircraft WHERE {flag}").fetchone()
+        assert len(body[flag]) == n, flag
+        assert len(set(body[flag])) == n

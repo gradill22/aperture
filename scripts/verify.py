@@ -3,10 +3,13 @@
 uv run python scripts/verify.py phase0
 uv run python scripts/verify.py phase1 [--record]    (--record rewrites the golden JSON)
 uv run python scripts/verify.py phase2               (needs LM Studio serving qwen/qwen3.5-9b)
+uv run python scripts/verify.py phase3               (APERTURE_PORT=<port> if 8080 is taken)
 """
 
+import ipaddress
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -76,6 +79,7 @@ GOLDEN_CASES = {
     ),
 }
 VOLATILE = {"loaded_at"}
+NO_PYTHON = {"tiles"}
 
 
 def fetch(method: str, path: str, body: dict | None) -> tuple[int, object]:
@@ -122,9 +126,27 @@ def egress_blocked(services: tuple[str, ...] = ()) -> bool:
         print(f"  probe -> {url}: {'blocked' if blocked else 'REACHABLE'} (exit {res.returncode})")
         ok &= blocked
         for svc in services:
-            code = f"import urllib.request as u; u.urlopen({url!r}, timeout=5)"
-            cmd = ["docker", "compose", "exec", "-T", svc, "python", "-c", code]
-            res = subprocess.run(cmd, cwd=ROOT, env=ENV, capture_output=True, text=True, check=False)
+            if svc in NO_PYTHON:  # images without Python: busybox/GNU wget
+                cmd = [
+                    "docker",
+                    "compose",
+                    "exec",
+                    "-T",
+                    svc,
+                    "wget",
+                    "-q",
+                    "-T",
+                    "5",
+                    "-O",
+                    "/dev/null",
+                    url,
+                ]
+            else:
+                code = f"import urllib.request as u; u.urlopen({url!r}, timeout=5)"
+                cmd = ["docker", "compose", "exec", "-T", svc, "python", "-c", code]
+            res = subprocess.run(
+                cmd, cwd=ROOT, env=ENV, capture_output=True, text=True, check=False
+            )
             blocked = res.returncode != 0
             print(f"  {svc} -> {url}: {'blocked' if blocked else 'REACHABLE'}")
             ok &= blocked
@@ -265,7 +287,9 @@ def check_fence_answer(spec: dict, out: dict) -> bool:
         print("    FAIL: no successful geofence_alert call")
         return False
     args = calls[-1]["arguments"]
-    allowed = {int(i) for i in sql(f"SELECT id FROM osm_feature WHERE name ILIKE '{spec['name_like']}'")}
+    allowed = {
+        int(i) for i in sql(f"SELECT id FROM osm_feature WHERE name ILIKE '{spec['name_like']}'")
+    }
     t0, t1 = spec["window"]
     window = (parse_ts(args.get("start")), parse_ts(args.get("end")))
     expected = (parse_ts(t0), parse_ts(t1))
@@ -283,8 +307,14 @@ def check_fence_answer(spec: dict, out: dict) -> bool:
 
     hits = [h for a in out["map_actions"] if a["type"] == "show_geofence_hits" for h in a["hits"]]
     answer = {h["icao24"] for h in hits}
-    q = {"fid": args["feature_id"], "t0": t0, "t1": t1, "buf": spec["buffer_m"], "edge": EDGE_M,
-         "deg": PREFILTER_DEG}
+    q = {
+        "fid": args["feature_id"],
+        "t0": t0,
+        "t1": t1,
+        "buf": spec["buffer_m"],
+        "edge": EDGE_M,
+        "deg": PREFILTER_DEG,
+    }
     lower = set(sql(POINT_TRUTH.format(**q)))
     upper = set(sql(SEGMENT_TRUTH.format(**q)))
     missing, extra = lower - answer, answer - upper
@@ -328,7 +358,7 @@ def check_mcp() -> bool:
     _, called = post_json(MCP_URL, call, MCP_ACCEPT)
     try:
         first = json.loads(called["result"]["content"][0]["text"])["results"][0]["feature_id"]
-    except (TypeError, KeyError, IndexError, json.JSONDecodeError):
+    except TypeError, KeyError, IndexError, json.JSONDecodeError:
         first = None
     good = first == DCA
     print(f"  mcp tools/call search_entities KDCA -> feature {first} {'ok' if good else 'FAIL'}")
@@ -358,7 +388,116 @@ def phase2() -> bool:
     return ok
 
 
-GATES = {"phase0": phase0, "phase1": phase1, "phase2": phase2}
+# --------------------------------------------------------------------------- phase 3
+
+EDGE_UPSTREAMS = {"backend:8000", "tiles:3000", "mcp-server:8001"}
+EVIDENCE3 = ROOT / ".verify" / "phase3"
+
+
+def compose_out(*args: str) -> str:
+    cmd = ["docker", "compose", *args]
+    return subprocess.run(
+        cmd, cwd=ROOT, env=ENV, capture_output=True, text=True, check=False
+    ).stdout
+
+
+def edge_config_ok() -> bool:
+    """The edge's effective nginx config may only proxy to internal services, never resolve names."""
+    conf = compose_out("exec", "-T", "frontend", "nginx", "-T")
+    passes = re.findall(r"^\s*(\w+_pass)\s+([^;]+);", conf, re.MULTILINE)
+    targets = {re.sub(r"^\w+://", "", t).split("/")[0] for _, t in passes}
+    resolvers = re.findall(r"^\s*resolver\s", conf, re.MULTILINE)
+    ok = bool(conf) and targets <= EDGE_UPSTREAMS and not resolvers
+    print(
+        f"  edge nginx upstreams: {sorted(targets)}; resolver directives: {len(resolvers)} {'ok' if ok else 'FAIL'}"
+    )
+    return ok
+
+
+def internal_subnets() -> list[ipaddress.IPv4Network]:
+    out = subprocess.run(
+        ["docker", "network", "inspect", "aperture-internal", "--format", "{{range .IPAM.Config}}{{.Subnet}} {{end}}"],
+        capture_output=True, text=True, check=False,
+    ).stdout.split()  # fmt: skip
+    return [ipaddress.ip_network(n) for n in out if ":" not in n]
+
+
+def edge_sockets_ok() -> bool:
+    """After the e2e run: every connection the edge opened (not accepted on :8080) went to the internal network."""
+    table = compose_out("exec", "-T", "frontend", "cat", "/proc/net/tcp")
+    nets = internal_subnets()
+    outbound, stray = 0, []
+    for line in table.splitlines()[1:]:
+        f = line.split()
+        lport = f[1].split(":")[1]
+        rip, rport = f[2].split(":")
+        state = f[3]
+        if state == "0A" or int(lport, 16) == 8080:  # listening socket / inbound clients
+            continue
+        addr = ipaddress.IPv4Address(bytes.fromhex(rip)[::-1])
+        outbound += 1
+        if not addr.is_loopback and not any(addr in n for n in nets):
+            stray.append(f"{addr}:{int(rport, 16)}")
+    ok = bool(nets) and outbound > 0 and not stray
+    print(
+        f"  edge outbound sockets: {outbound}, outside {[str(n) for n in nets]}: {stray or 'none'} {'ok' if ok else 'FAIL'}"
+    )
+    return ok
+
+
+def relay_config_ok() -> bool:
+    env = compose_out("exec", "-T", "llm-relay", "printenv", "LLM_UPSTREAM").strip()
+    ok = env == "host.docker.internal:1234"
+    print(f"  llm-relay upstream: {env or '?'} {'ok' if ok else 'FAIL'}")
+    return ok
+
+
+def e2e() -> bool:
+    out = EVIDENCE3 / "e2e"
+    out.mkdir(parents=True, exist_ok=True)
+    for f in out.glob("*.png"):
+        f.unlink()
+    ok = run("docker", "compose", "--profile", "tools", "build", "e2e")
+    ok &= run("docker", "compose", "run", "--rm", "e2e")
+    try:
+        stats = json.loads((out / "results.json").read_text())["stats"]
+        print(
+            f"  playwright: {stats['expected']} passed, {stats['unexpected']} failed, {stats['flaky']} flaky"
+        )
+        ok &= stats["unexpected"] == 0 and stats["expected"] >= 4
+    except OSError, KeyError, json.JSONDecodeError:
+        print("  playwright: no results.json")
+        ok = False
+    return ok
+
+
+def phase3() -> bool:
+    ok = run(
+        "docker",
+        "build",
+        "--network",
+        "none",
+        "--target",
+        "check",
+        "-f",
+        "frontend/Dockerfile",
+        ".",
+    )
+    ok &= lint_test_up()
+    if not ok:
+        return False
+    print("offline boundary:", flush=True)
+    ok &= egress_blocked(services=("backend", "mcp-server", "tiles"))
+    ok &= edge_config_ok()
+    ok &= relay_config_ok()
+    ok &= check_mcp()
+    print("browser (Playwright on the internal network):", flush=True)
+    ok &= e2e()
+    ok &= edge_sockets_ok()
+    return ok
+
+
+GATES = {"phase0": phase0, "phase1": phase1, "phase2": phase2, "phase3": phase3}
 
 if __name__ == "__main__":
     gate = sys.argv[1] if len(sys.argv) > 1 else ""

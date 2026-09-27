@@ -1,0 +1,25 @@
+import js from "@eslint/js";
+import reactHooks from "eslint-plugin-react-hooks";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config(
+  { ignores: ["dist", "node_modules"] },
+  {
+    files: ["**/*.{ts,tsx}"],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    languageOptions: { ecmaVersion: 2023, globals: globals.browser },
+    plugins: { "react-hooks": reactHooks },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      // Offline guarantee: every request is same-origin (/api, /tiles, /fonts, /sprites).
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "Literal[value=/^(https?:)?\\/\\//]",
+          message: "No absolute URLs: the app must only talk to its own origin.",
+        },
+      ],
+    },
+  },
+);
