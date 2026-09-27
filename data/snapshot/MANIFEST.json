@@ -1,0 +1,199 @@
+{
+  "adsb": {
+    "aircraft_scanned": 79964,
+    "bbox": [
+      -77.9669,
+      38.1835,
+      -76.1069,
+      39.6309
+    ],
+    "date": "2026-09-24",
+    "generated_at": "2026-09-27T14:25:16+00:00",
+    "license": "ODbL 1.0, adsb.lol",
+    "outputs": {
+      "aircraft": {
+        "bytes": 75298,
+        "path": "snapshot/adsb/2026-09-24/aircraft.parquet",
+        "rows": 3101,
+        "sha256": "b9b90ec90c81a5462a195786c953537153954686f59165afb10b2cf284decdae"
+      },
+      "positions": {
+        "bytes": 254380850,
+        "path": "snapshot/adsb/2026-09-24/positions.parquet",
+        "rows": 8773026,
+        "sha256": "4e97c1403b0d7af4e6a0415642bfc03aa0d6c3e617b75423d0becb484a7fb545"
+      }
+    },
+    "release": "v2026.09.24-planes-readsb-prod-0",
+    "repo": "adsblol/globe_history_2026",
+    "selection": "full-day trace of every aircraft with >=1 point inside bbox",
+    "sources": [
+      {
+        "name": "v2026.09.24-planes-readsb-prod-0.tar.aa",
+        "sha256": "34a76b65cf7dbc6594fcf7635a33c4849dd3e1f8bb72beae264847fc725c1929",
+        "size": 2000000000,
+        "url": "https://github.com/adsblol/globe_history_2026/releases/download/v2026.09.24-planes-readsb-prod-0/v2026.09.24-planes-readsb-prod-0.tar.aa"
+      },
+      {
+        "name": "v2026.09.24-planes-readsb-prod-0.tar.ab",
+        "sha256": "5491188e9057211c197190562340ee628b30d0121723c0114c7b63541720988c",
+        "size": 2000000000,
+        "url": "https://github.com/adsblol/globe_history_2026/releases/download/v2026.09.24-planes-readsb-prod-0/v2026.09.24-planes-readsb-prod-0.tar.ab"
+      },
+      {
+        "name": "v2026.09.24-planes-readsb-prod-0.tar.ac",
+        "sha256": "eb735a2fa1b42387939707f2e5dc0c55dbb9798837ab0cd9632b2d262baaeb10",
+        "size": 64798720,
+        "url": "https://github.com/adsblol/globe_history_2026/releases/download/v2026.09.24-planes-readsb-prod-0/v2026.09.24-planes-readsb-prod-0.tar.ac"
+      }
+    ]
+  },
+  "basemap": {
+    "assets": {
+      "commit": "028c18f713baecad011301ff7a69acc39bcc2ae7",
+      "font_files": 768,
+      "fontstacks": [
+        "Noto Sans Regular",
+        "Noto Sans Medium",
+        "Noto Sans Italic"
+      ],
+      "repo": "https://github.com/protomaps/basemaps-assets",
+      "sprites": [
+        "dark.json",
+        "dark.png",
+        "dark@2x.json",
+        "dark@2x.png",
+        "light.json",
+        "light.png",
+        "light@2x.json",
+        "light@2x.png"
+      ]
+    },
+    "bbox": [
+      -77.9669,
+      38.1835,
+      -76.1069,
+      39.6309
+    ],
+    "generated_at": "2026-09-27T14:21:52+00:00",
+    "license": "Protomaps basemap: ODbL 1.0 (c) OpenStreetMap contributors; assets: see repo",
+    "maxzoom": 15,
+    "outputs": {
+      "basemap": {
+        "bytes": 282612741,
+        "path": "tiles/basemap.pmtiles",
+        "sha256": "3ea2c017c45f42a0f08b7a16dc5228c287b2efe95edb43a1d4ffbe57f56dd301"
+      }
+    },
+    "source": "https://build.protomaps.com/20260924.pmtiles"
+  },
+  "infrastructure_tiles": {
+    "generated_at": "2026-09-27T14:24:05+00:00",
+    "layers": [
+      "airports",
+      "ports",
+      "government",
+      "military"
+    ],
+    "outputs": {
+      "infrastructure": {
+        "bytes": 2572493,
+        "path": "tiles/infrastructure.pmtiles",
+        "sha256": "aa439678de5ef4e829f6c4301e0bcca8cd7ad663e6c12e57fc1bddd72deee60e"
+      }
+    },
+    "tool": "indigoag/tippecanoe:latest (tippecanoe v2.23.0)",
+    "zoom": [
+      4,
+      14
+    ]
+  },
+  "osm": {
+    "bbox": [
+      -77.9669,
+      38.1835,
+      -76.1069,
+      39.6309
+    ],
+    "export_config": {
+      "area_tags": true,
+      "linear_tags": [
+        "aeroway=runway",
+        "man_made=pier"
+      ]
+    },
+    "filters": {
+      "airports": [
+        "nwr/aeroway=aerodrome,heliport,helipad,runway,terminal"
+      ],
+      "government": [
+        "nwr/office=government",
+        "nwr/building=government",
+        "nwr/government"
+      ],
+      "military": [
+        "nwr/landuse=military",
+        "nwr/military"
+      ],
+      "ports": [
+        "nwr/landuse=port",
+        "nwr/industrial=port",
+        "nwr/harbour",
+        "nwr/leisure=marina",
+        "nwr/amenity=ferry_terminal",
+        "nwr/man_made=pier"
+      ]
+    },
+    "generated_at": "2026-09-27T14:20:14+00:00",
+    "license": "ODbL 1.0, (c) OpenStreetMap contributors",
+    "outputs": {
+      "airports": {
+        "bytes": 338482,
+        "features": 528,
+        "path": "snapshot/osm/airports.geojsonl",
+        "sha256": "c18366c24e045295401d96263b320f7300bc77806cc86218e3f55603f3d7d1cb"
+      },
+      "government": {
+        "bytes": 658043,
+        "features": 871,
+        "path": "snapshot/osm/government.geojsonl",
+        "sha256": "36ef6688aa4001f6444226c975c4ef315bf8a3a903375a655d47259ce516b630"
+      },
+      "military": {
+        "bytes": 696814,
+        "features": 516,
+        "path": "snapshot/osm/military.geojsonl",
+        "sha256": "f22415f817473f8416e983ba65172bd95eae5e51146dccf0f0e83198ffbdf994"
+      },
+      "ports": {
+        "bytes": 314496,
+        "features": 567,
+        "path": "snapshot/osm/ports.geojsonl",
+        "sha256": "f165ac013b81cc1b89622affba1a6108b28121896235515c47ba7c749e9426b5"
+      }
+    },
+    "post_filter": "ports: unnamed man_made=pier dropped",
+    "sources": [
+      {
+        "bytes": 21005660,
+        "replication_timestamp": "2026-09-26T20:22:51Z",
+        "url": "https://download.geofabrik.de/north-america/us/district-of-columbia-latest.osm.pbf"
+      },
+      {
+        "bytes": 214448760,
+        "replication_timestamp": "2026-09-26T20:22:51Z",
+        "url": "https://download.geofabrik.de/north-america/us/maryland-latest.osm.pbf"
+      },
+      {
+        "bytes": 427734625,
+        "replication_timestamp": "2026-09-26T20:22:51Z",
+        "url": "https://download.geofabrik.de/north-america/us/virginia-latest.osm.pbf"
+      },
+      {
+        "bytes": 98935671,
+        "replication_timestamp": "2026-09-26T20:22:51Z",
+        "url": "https://download.geofabrik.de/north-america/us/west-virginia-latest.osm.pbf"
+      }
+    ]
+  }
+}

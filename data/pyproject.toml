@@ -1,0 +1,9 @@
+[project]
+name = "aperture-data"
+version = "0.1.0"
+description = "One-time data snapshot (networked) and offline tile bake scripts"
+requires-python = ">=3.14"
+dependencies = ["httpx", "orjson", "pyarrow", "tzdata"]
+
+[tool.uv]
+package = false

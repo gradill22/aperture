@@ -1,0 +1,41 @@
+{
+  "source": "subset of data/snapshot (see MANIFEST.json)",
+  "dca_centroid": [
+    -77.040193,
+    38.8522
+  ],
+  "aircraft": [
+    "a00929",
+    "a00ce0",
+    "a01805",
+    "a01bbc",
+    "a0232a",
+    "a02e0a",
+    "a0345f",
+    "a03816",
+    "a0433b",
+    "a046f2",
+    "a022d3",
+    "a02f05",
+    "a04f5f",
+    "a05432",
+    "a0554a",
+    "06a01c",
+    "06a3cf",
+    "15cd28",
+    "3f59f3",
+    "3f5bff",
+    "01025d",
+    "02013f",
+    "040048",
+    "040204",
+    "06a070"
+  ],
+  "positions": 86591,
+  "features": {
+    "airports": 16,
+    "ports": 12,
+    "government": 12,
+    "military": 13
+  }
+}

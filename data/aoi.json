@@ -1,0 +1,14 @@
+{
+  "name": "Washington DC metro",
+  "center": [-77.0369, 38.9072],
+  "radius_mi": 50,
+  "radius_km": 80.467,
+  "bbox": [-77.9669, 38.1835, -76.1069, 39.6309],
+  "date": "2026-09-24",
+  "sources": {
+    "adsb_release": "v2026.09.24-planes-readsb-prod-0",
+    "adsb_repo": "adsblol/globe_history_2026",
+    "protomaps_build": "20260924",
+    "geofabrik_regions": ["district-of-columbia", "maryland", "virginia", "west-virginia"]
+  }
+}

@@ -1,0 +1,7 @@
+# Images used by the pipeline, pinned by digest. Pulled/built once during bootstrap (networked);
+# every later step uses them from the local Docker store only.
+#
+# Phase 0: snapshot tooling
+protomaps/go-pmtiles@sha256:06574f01f55a78f78f887bc7ebf729a5c093c0d6e17d9876300cfcb0758b59d3   # pmtiles v1.31.2
+indigoag/tippecanoe@sha256:62914726c0300e78bb2ca60fcce97d85995255caad5f10e78dc2e1bd59cec900    # tippecanoe v2.23.0
+aperture/osmium:1  local sha256:4f2ceb864b4d8cb1652862549ee7b7eb5e7f99ef23595c09db14051a022c97a0  # bootstrap/tools/osmium.Dockerfile, osmium 1.18.0
