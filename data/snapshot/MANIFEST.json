@@ -88,7 +88,7 @@
     "source": "https://build.protomaps.com/20260924.pmtiles"
   },
   "infrastructure_tiles": {
-    "generated_at": "2026-09-27T14:24:05+00:00",
+    "generated_at": "2026-09-27T14:54:31+00:00",
     "layers": [
       "airports",
       "ports",
@@ -97,9 +97,9 @@
     ],
     "outputs": {
       "infrastructure": {
-        "bytes": 2572493,
+        "bytes": 2568846,
         "path": "tiles/infrastructure.pmtiles",
-        "sha256": "aa439678de5ef4e829f6c4301e0bcca8cd7ad663e6c12e57fc1bddd72deee60e"
+        "sha256": "819446b9576163a3a89a06f26fff765055f18e9801718e05ed52f1d8adad62f5"
       }
     },
     "tool": "indigoag/tippecanoe:latest (tippecanoe v2.23.0)",
@@ -118,8 +118,7 @@
     "export_config": {
       "area_tags": true,
       "linear_tags": [
-        "aeroway=runway",
-        "man_made=pier"
+        "area=no"
       ]
     },
     "filters": {
@@ -144,14 +143,14 @@
         "nwr/man_made=pier"
       ]
     },
-    "generated_at": "2026-09-27T14:20:14+00:00",
+    "generated_at": "2026-09-27T14:54:01+00:00",
     "license": "ODbL 1.0, (c) OpenStreetMap contributors",
     "outputs": {
       "airports": {
-        "bytes": 338482,
-        "features": 528,
+        "bytes": 337911,
+        "features": 527,
         "path": "snapshot/osm/airports.geojsonl",
-        "sha256": "c18366c24e045295401d96263b320f7300bc77806cc86218e3f55603f3d7d1cb"
+        "sha256": "e5e0dbf7f4b43729a587554b39a19e90731251b959b5aeb1294b5074d93a8af4"
       },
       "government": {
         "bytes": 658043,
@@ -166,10 +165,10 @@
         "sha256": "f22415f817473f8416e983ba65172bd95eae5e51146dccf0f0e83198ffbdf994"
       },
       "ports": {
-        "bytes": 314496,
-        "features": 567,
+        "bytes": 305972,
+        "features": 548,
         "path": "snapshot/osm/ports.geojsonl",
-        "sha256": "f165ac013b81cc1b89622affba1a6108b28121896235515c47ba7c749e9426b5"
+        "sha256": "363976985f98ca8c8e72d7683afd23badaa1ce57a66d79740d76a22a0f0590f7"
       }
     },
     "post_filter": "ports: unnamed man_made=pier dropped",

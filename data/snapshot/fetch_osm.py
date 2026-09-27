@@ -37,9 +37,9 @@ LAYERS = {
     "military": ["nwr/landuse=military", "nwr/military"],
 }
 
-# Closed ways become polygons only (osmium's default also emits a duplicate LineString),
-# except these genuinely linear features.
-EXPORT_CONFIG = {"linear_tags": ["aeroway=runway", "man_made=pier"], "area_tags": True}
+# Closed ways become polygons only (osmium's default also emits a duplicate LineString, and so
+# would any linear_tags match), giving one feature per OSM object; area=no keeps them linear.
+EXPORT_CONFIG = {"linear_tags": ["area=no"], "area_tags": True}
 
 
 PORT_TAGS = {
