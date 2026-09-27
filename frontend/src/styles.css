@@ -745,8 +745,11 @@ textarea {
   font-size: 12px;
 }
 .layer-toggles legend {
+  /* A floated legend is not drawn on the fieldset border: it sits inside the box, as the first row. */
+  float: left;
   font-weight: 600;
-  padding: 0 2px;
+  padding: 0;
+  margin-bottom: 2px;
 }
 .layer-toggles label {
   display: flex;
