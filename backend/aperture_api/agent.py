@@ -34,7 +34,7 @@ there are more than 10, give the total and list the first 10. Only state facts t
 tool results; never guess airports, origins or destinations from coordinates. Keep the answer \
 short: the map already shows tracks and fences."""
 
-TZ_NAMES = {"UTC": "UTC", "ET": "US Eastern time (America/New_York)"}
+TZ_NAMES = {"UTC": "UTC", "ET": "US Eastern Time (America/New_York)"}
 
 
 class LLMUnavailable(RuntimeError):
