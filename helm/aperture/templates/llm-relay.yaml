@@ -1,0 +1,49 @@
+# The one pod with a route out of the namespace, and it forwards to exactly one place: LM Studio
+# (see networkpolicy.yaml). The backend reaches the model only through it.
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-relay
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "aperture.selector" (list . "llm-relay") | nindent 4 }}
+  ports:
+    - { name: llm, port: {{ .Values.llm.port }}, targetPort: llm }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-relay
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "aperture.selector" (list . "llm-relay") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aperture.labels" . | nindent 8 }}
+        {{- include "aperture.selector" (list . "llm-relay") | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        {{- include "aperture.podSecurity" 10001 | nindent 8 }}
+      containers:
+        - name: llm-relay
+          image: {{ .Values.images.llmRelay }}
+          imagePullPolicy: Never
+          env:
+            - { name: LLM_UPSTREAM, value: "{{ include "aperture.llmHostIP" . }}:{{ .Values.llm.port }}" }
+          ports:
+            - { name: llm, containerPort: 1234 }
+          readinessProbe:
+            tcpSocket: { port: llm }
+            periodSeconds: 5
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+          securityContext:
+            {{- include "aperture.containerSecurity" . | nindent 12 }}

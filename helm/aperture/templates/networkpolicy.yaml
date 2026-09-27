@@ -1,0 +1,50 @@
+# Offline boundary. No pod in the namespace may open a connection anywhere...
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+---
+# ...except to other pods in this namespace and to cluster DNS...
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-namespace-and-dns
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector: {}
+    - to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: kube-system }
+          podSelector:
+            matchLabels: { k8s-app: kube-dns }
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+---
+# ...and llm-relay to LM Studio on the host: that one address and port only.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: llm-relay-to-host
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "aperture.selector" (list . "llm-relay") | nindent 6 }}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - ipBlock: { cidr: "{{ include "aperture.llmHostIP" . }}/32" }
+      ports:
+        - { protocol: TCP, port: {{ .Values.llm.port }} }

@@ -2,7 +2,7 @@
   "mcpServers": {
     "aperture": {
       "type": "http",
-      "url": "http://localhost:8080/mcp"
+      "url": "http://localhost:8090/mcp"
     }
   }
 }

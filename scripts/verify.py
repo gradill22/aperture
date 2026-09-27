@@ -3,7 +3,8 @@
 uv run python scripts/verify.py phase0
 uv run python scripts/verify.py phase1 [--record]    (--record rewrites the golden JSON)
 uv run python scripts/verify.py phase2               (needs LM Studio serving qwen/qwen3.5-9b)
-uv run python scripts/verify.py phase3               (APERTURE_PORT=<port> if 8080 is taken)
+uv run python scripts/verify.py phase3               (APERTURE_PORT=<port> if 8090 is taken)
+uv run python scripts/verify.py phase4               (minikube profile `aperture` running; LM Studio)
 """
 
 import ipaddress
@@ -16,10 +17,14 @@ import time
 from datetime import UTC, datetime
 from pathlib import Path
 
+import k8s
+
 ROOT = Path(__file__).resolve().parents[1]
 GOLDEN = ROOT / "scripts" / "golden"
 # Git Bash would rewrite container paths like /dev/null in docker args.
 ENV = os.environ | {"MSYS_NO_PATHCONV": "1"}
+# Where probe/sql/exec run: the compose stack, or (phase 4) the minikube namespace.
+TARGET = "compose"
 
 
 def run(*args: str) -> bool:
@@ -28,9 +33,19 @@ def run(*args: str) -> bool:
 
 
 def probe(*curl_args: str) -> subprocess.CompletedProcess:
-    """curl from a throwaway container on the internal network."""
-    cmd = ["docker", "compose", "run", "--rm", "-T", "probe", *curl_args]
+    """curl from inside the isolated network: a throwaway compose container, or the probe pod."""
+    if TARGET == "k8s":
+        cmd = k8s.kubectl("exec", "probe", "--", "curl", *curl_args)
+    else:
+        cmd = ["docker", "compose", "run", "--rm", "-T", "probe", *curl_args]
     return subprocess.run(cmd, cwd=ROOT, env=ENV, capture_output=True, text=True, check=False)
+
+
+def exec_in(svc: str, *args: str) -> list[str]:
+    """Command line that runs `args` inside a running service."""
+    if TARGET == "k8s":
+        return k8s.kubectl("exec", f"deploy/{svc}", "--", *args)
+    return ["docker", "compose", "exec", "-T", svc, *args]
 
 
 def phase0() -> bool:
@@ -79,7 +94,7 @@ GOLDEN_CASES = {
     ),
 }
 VOLATILE = {"loaded_at"}
-NO_PYTHON = {"tiles"}
+NO_PYTHON = {"tiles", "frontend"}
 
 
 def fetch(method: str, path: str, body: dict | None) -> tuple[int, object]:
@@ -116,34 +131,29 @@ def lint_test_up() -> bool:
     return ok
 
 
-def egress_blocked(services: tuple[str, ...] = ()) -> bool:
+def egress_blocked(
+    services: tuple[str, ...] = (), targets: list[str] = EGRESS_TARGETS, from_probe: bool = True
+) -> bool:
     """Every target must be unreachable from the probe container and from each named service."""
     ok = True
     print("egress probes (each must fail):", flush=True)
-    for url in EGRESS_TARGETS:
-        res = probe("-sS", "-m", "5", "-o", "/dev/null", url)
-        blocked = res.returncode != 0
-        print(f"  probe -> {url}: {'blocked' if blocked else 'REACHABLE'} (exit {res.returncode})")
-        ok &= blocked
+    for url in targets:
+        if from_probe:
+            res = probe("-sS", "-m", "5", "-o", "/dev/null", url)
+            blocked = res.returncode != 0
+            print(
+                f"  probe -> {url}: {'blocked' if blocked else 'REACHABLE'} (exit {res.returncode})"
+            )
+            ok &= blocked
         for svc in services:
             if svc in NO_PYTHON:  # images without Python: busybox/GNU wget
-                cmd = [
-                    "docker",
-                    "compose",
-                    "exec",
-                    "-T",
-                    svc,
-                    "wget",
-                    "-q",
-                    "-T",
-                    "5",
-                    "-O",
-                    "/dev/null",
-                    url,
-                ]
+                # GNU wget retries a timed-out connect 20 times (minutes per URL where a
+                # NetworkPolicy drops packets); busybox has no --tries. Cap both.
+                wget = ("wget", "-q", "-T", "5", "-O", "/dev/null", url)
+                cmd = exec_in(svc, "timeout", "10", *wget)
             else:
                 code = f"import urllib.request as u; u.urlopen({url!r}, timeout=5)"
-                cmd = ["docker", "compose", "exec", "-T", svc, "python", "-c", code]
+                cmd = exec_in(svc, "python", "-c", code)
             res = subprocess.run(
                 cmd, cwd=ROOT, env=ENV, capture_output=True, text=True, check=False
             )
@@ -158,7 +168,12 @@ def phase1(record: bool = False) -> bool:
     if not ok:
         return False
     ok &= egress_blocked()
+    return ok & golden_ok(record)
 
+
+def golden_ok(record: bool = False) -> bool:
+    """Every backend endpoint answers exactly as recorded from the same snapshot in Gate 1."""
+    ok = True
     print("golden responses:", flush=True)
     folder = GOLDEN / "phase1"
     folder.mkdir(parents=True, exist_ok=True)
@@ -230,8 +245,11 @@ WHERE f.id = {fid} AND s.prev_geom IS NOT NULL AND s.ts >= '{t0}' AND s.prev_ts 
 
 
 def sql(query: str) -> list[str]:
-    cmd = ["docker", "compose", "exec", "-T", "db", "psql", "-U", "aperture", "-d", "aperture",
-           "-v", "ON_ERROR_STOP=1", "-At", "-c", query]  # fmt: skip
+    psql = ["psql", "-U", "aperture", "-d", "aperture", "-v", "ON_ERROR_STOP=1", "-At", "-c", query]
+    if TARGET == "k8s":
+        cmd = k8s.kubectl("exec", "db-0", "-c", "postgres", "--", *psql)
+    else:
+        cmd = ["docker", "compose", "exec", "-T", "db", *psql]
     res = subprocess.run(cmd, cwd=ROOT, env=ENV, capture_output=True, text=True, check=True)
     return [line for line in res.stdout.splitlines() if line]
 
@@ -249,7 +267,7 @@ def post_json(url: str, body: dict, *headers: str, timeout_s: int = 300) -> tupl
         return int(status or 0), None
 
 
-def ask(name: str, question: str) -> dict | None:
+def ask(name: str, question: str, evidence: Path = ROOT / ".verify" / "phase2") -> dict | None:
     t = time.monotonic()
     status, out = post_json(
         "http://backend:8000/chat", {"messages": [{"role": "user", "content": question}]}
@@ -258,7 +276,6 @@ def ask(name: str, question: str) -> dict | None:
     if status != 200 or not out:
         print(f"    {out}")
         return None
-    evidence = ROOT / ".verify" / "phase2"
     evidence.mkdir(parents=True, exist_ok=True)
     slim = {"question": question, "reply": out["reply"], "tool_calls": out["tool_calls"]}
     (evidence / f"{name}.json").write_text(json.dumps(slim, indent=1) + "\n", encoding="utf-8")
@@ -497,9 +514,174 @@ def phase3() -> bool:
     return ok
 
 
-GATES = {"phase0": phase0, "phase1": phase1, "phase2": phase2, "phase3": phase3}
+# --------------------------------------------------------------------------- phase 4
+
+EVIDENCE4 = ROOT / ".verify" / "phase4"
+APP_SERVICES = ("loader", "backend", "mcp-server", "llm-relay", "tiles", "frontend")
+POLICIES = {"default-deny-egress", "allow-namespace-and-dns", "llm-relay-to-host"}
+PF_PORT = 18090
+DC_TILE = "10/292/391"  # a z10 tile over downtown DC, present in both tilesets
+
+
+def init_sql_matches() -> bool:
+    """The chart carries its own copy of db/init/ (Helm cannot read outside the chart)."""
+    src = {f.name: f.read_bytes() for f in (ROOT / "db" / "init").glob("*.sql")}
+    dst = {f.name: f.read_bytes() for f in (k8s.CHART / "files" / "db-init").glob("*.sql")}
+    ok = bool(src) and src == dst
+    print(
+        f"  chart init SQL == db/init/: {'ok' if ok else 'DIFFERS (copy db/init/*.sql into the chart)'}"
+    )
+    return ok
+
+
+def chart_ok() -> bool:
+    ok = init_sql_matches()
+    helm = k8s.tool("helm")
+    dummy = ["--set", "llm.hostIP=192.0.2.1"]
+    ok &= run(helm, "lint", "--strict", str(k8s.CHART), *dummy)
+    res = subprocess.run([helm, "template", "aperture", str(k8s.CHART), *dummy],
+                         capture_output=True, text=True, check=False)  # fmt: skip
+    (EVIDENCE4 / "rendered.yaml").write_text(res.stdout, encoding="utf-8")
+    kinds = sorted(set(re.findall(r"^kind: (\w+)", res.stdout, re.MULTILINE)))
+    print(f"  helm template: exit {res.returncode}, kinds {kinds}")
+    pulls = re.findall(r"imagePullPolicy: (\w+)", res.stdout)
+    never = bool(pulls) and set(pulls) == {"Never"}
+    print(f"  imagePullPolicy: {len(pulls)} containers, all Never: {'ok' if never else 'FAIL'}")
+    return ok and res.returncode == 0 and never
+
+
+def start_probe() -> bool:
+    subprocess.run(k8s.kubectl("delete", "pod", "probe", "--ignore-not-found", "--wait"),
+                   capture_output=True, check=False)  # fmt: skip
+    image = k8s.content_tag(k8s.PROBE_IMAGE)
+    ok = run(*k8s.kubectl("run", "probe", f"--image={image}", "--image-pull-policy=Never",
+                          "--restart=Never", "--labels=app.kubernetes.io/component=probe",
+                          "--command", "--", "sleep", "3600"))  # fmt: skip
+    return ok and run(*k8s.kubectl("wait", "--for=condition=Ready", "pod/probe", "--timeout=120s"))
+
+
+def cluster_state_ok() -> bool:
+    state = k8s.out(k8s.kubectl("get", "pods,jobs,svc,networkpolicy", "-o", "wide"))
+    (EVIDENCE4 / "cluster.txt").write_text(state + "\n", encoding="utf-8")
+    print("  " + state.replace("\n", "\n  "))
+    names = k8s.out(k8s.kubectl("get", "networkpolicy", "-o", "name")).split()
+    have = {n.rpartition("/")[2] for n in names}
+    ok = POLICIES <= have
+    print(
+        f"  network policies {sorted(POLICIES)}: {'ok' if ok else 'MISSING ' + str(POLICIES - have)}"
+    )
+    return ok
+
+
+def relay_upstream_ok(host_ip: str) -> bool:
+    env = k8s.out(exec_in("llm-relay", "printenv", "LLM_UPSTREAM"))
+    ok = env == f"{host_ip}:1234"
+    print(f"  llm-relay upstream: {env or '?'} {'ok' if ok else 'FAIL'}")
+    return ok
+
+
+def curl_host(url: str, *args: str) -> tuple[int, str]:
+    """curl from the Windows host (not a container): the port-forwarded edge.
+
+    Bytes, not text: tiles are binary protobuf."""
+    res = subprocess.run(["curl", "-s", "-m", "30", "-w", "\n%{http_code}", *args, url],
+                         capture_output=True, check=False)  # fmt: skip
+    body, _, status = res.stdout.rpartition(b"\n")
+    return int(status or 0), body.decode("utf-8", errors="replace")
+
+
+def edge_port_forward_ok() -> bool:
+    """The edge Service, reached from the host through kubectl port-forward."""
+    pf = subprocess.Popen(k8s.kubectl("port-forward", "svc/frontend", f"{PF_PORT}:8080"),
+                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)  # fmt: skip
+    try:
+        line = pf.stdout.readline() if pf.stdout else ""
+        if "Forwarding" not in line:
+            print(f"  port-forward failed: {line.strip()}")
+            return False
+        base = f"http://127.0.0.1:{PF_PORT}"
+        ok = True
+        checks = {
+            "/": lambda b: 'id="root"' in b,
+            "/api/health": lambda b: '"ok"' in b,
+            f"/tiles/basemap/{DC_TILE}": lambda b: len(b) > 0,
+            f"/tiles/infrastructure/{DC_TILE}": lambda b: len(b) > 0,
+            "/provenance.json": lambda b: "adsb" in b,
+        }
+        for path, good in checks.items():
+            status, body = curl_host(base + path)
+            passed = status == 200 and good(body)
+            print(f"  edge {path}: HTTP {status} {'ok' if passed else 'FAIL'}")
+            ok &= passed
+        body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+        status, out = curl_host(f"{base}/mcp", "-X", "POST", "-H", "content-type: application/json",
+                                "-H", MCP_ACCEPT, "-d", body)  # fmt: skip
+        try:
+            names = sorted(t["name"] for t in json.loads(out)["result"]["tools"])
+        except KeyError, TypeError, json.JSONDecodeError:
+            names = []
+        passed = status == 200 and names == [
+            "geofence_alert",
+            "get_entity_track",
+            "search_entities",
+        ]
+        print(f"  edge /mcp tools/list: HTTP {status} {names} {'ok' if passed else 'FAIL'}")
+        return ok and passed
+    finally:
+        pf.terminate()
+
+
+def phase4() -> bool:
+    global TARGET
+    EVIDENCE4.mkdir(parents=True, exist_ok=True)
+    print("chart:", flush=True)
+    ok = chart_ok()
+    ok &= run(sys.executable, "scripts/lint_network.py")
+    # App images, rebuilt offline (network: none) so the cluster runs exactly this tree.
+    ok &= run("docker", "compose", "build", *APP_SERVICES)
+    if not ok:
+        return False
+    print("deploy (images copied in, nothing pulled):", flush=True)
+    if not k8s.up():
+        return False
+    TARGET = "k8s"
+    host_ip = k8s.host_ip()
+    ok &= start_probe()
+    print("cluster:", flush=True)
+    ok &= cluster_state_ok()
+
+    print("offline boundary (NetworkPolicy):", flush=True)
+    lm_studio = f"http://{host_ip}:1234/v1/models"
+    ok &= egress_blocked(
+        ("backend", "mcp-server", "tiles", "frontend"), [*EGRESS_TARGETS[:2], lm_studio]
+    )
+    # The relay may reach LM Studio and nothing else.
+    ok &= egress_blocked(("llm-relay",), EGRESS_TARGETS[:2], from_probe=False)
+    ok &= relay_upstream_ok(host_ip)
+
+    ok &= golden_ok()
+    ok &= check_mcp()
+    print("edge via port-forward:", flush=True)
+    ok &= edge_port_forward_ok()
+
+    res = probe("-sS", "-m", "10", "http://llm-relay:1234/v1/models")
+    relay = res.returncode == 0 and LLM_MODEL in res.stdout
+    print(f"  llm-relay -> LM Studio: {'ok, serving ' + LLM_MODEL if relay else 'FAIL'}")
+    if not relay:
+        return False
+    print("chat (live LLM through the relay; checked against SQL in the cluster DB):", flush=True)
+    spec = FENCE_QUESTIONS["q1_dca"]
+    out = ask("q1_dca", spec["question"], EVIDENCE4)
+    ok &= out is not None and check_fence_answer(spec, out)
+    out = ask("q2_track", TRACK_QUESTION["question"], EVIDENCE4)
+    ok &= out is not None and check_track_answer(TRACK_QUESTION, out)
+    return ok
+
+
+GATES = {"phase0": phase0, "phase1": phase1, "phase2": phase2, "phase3": phase3, "phase4": phase4}
 
 if __name__ == "__main__":
+    sys.stdout.reconfigure(line_buffering=True)  # progress shows up live when logged to a file
     gate = sys.argv[1] if len(sys.argv) > 1 else ""
     if gate not in GATES:
         sys.exit(__doc__)

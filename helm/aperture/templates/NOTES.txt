@@ -1,0 +1,9 @@
+Aperture is starting in namespace {{ .Release.Namespace }}.
+
+  kubectl -n {{ .Release.Namespace }} wait --for=condition=complete job/loader-r{{ .Release.Revision }} --timeout=30m
+  kubectl -n {{ .Release.Namespace }} port-forward svc/frontend 8090:8080
+
+Then open http://localhost:8090 (MCP: http://localhost:8090/mcp).
+
+Egress: pods reach only each other and cluster DNS; llm-relay alone also reaches
+{{ .Values.llm.hostIP }}:{{ .Values.llm.port }} (LM Studio).

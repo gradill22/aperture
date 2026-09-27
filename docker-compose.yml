@@ -2,7 +2,7 @@
 # to the Docker host). Prerequisite images come from bootstrap/ (see bootstrap/images.lock).
 #
 #   docker compose up -d --build              db -> loader (one-shot) -> backend, mcp-server, tiles -> frontend
-#   open http://localhost:8080                 the edge (nginx) is the only published port
+#   open http://localhost:8090                 the edge (nginx) is the only published port
 #   docker compose run --rm probe <url>       curl from inside the internal network
 #   docker compose --profile test up -d db-test   fixtures DB for pytest on 127.0.0.1:55432
 name: aperture
@@ -42,7 +42,7 @@ networks:
   # Ordinary bridge: only llm-relay joins it, to reach LM Studio on the Docker host.
   llm-egress:
     name: aperture-llm-egress
-  # Carries only the published port (127.0.0.1:8080 -> frontend). Docker cannot publish ports
+  # Carries only the published port (127.0.0.1:8090 -> frontend:8080). Docker cannot publish ports
   # from an internal network, so the edge has a route out; Gate 3 proves nginx never uses it
   # (config audit: internal upstreams only, no resolver; socket table after the e2e run).
   edge:
@@ -151,8 +151,8 @@ services:
       mcp-server: { condition: service_healthy }
       tiles: { condition: service_healthy }
     networks: [internal, edge]
-    # Host port: APERTURE_PORT (default 8080).
-    ports: ["127.0.0.1:${APERTURE_PORT:-8080}:8080"]
+    # Host port: APERTURE_PORT (default 8090).
+    ports: ["127.0.0.1:${APERTURE_PORT:-8090}:8080"]
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
       interval: 5s

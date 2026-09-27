@@ -1,0 +1,48 @@
+# The edge: SPA + fonts/sprites, reverse proxy to backend, tiles and mcp-server. The only Service
+# exposed outside the cluster.
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  type: NodePort
+  selector:
+    {{- include "aperture.selector" (list . "frontend") | nindent 4 }}
+  ports:
+    - { name: http, port: 8080, targetPort: http, nodePort: {{ .Values.frontend.nodePort }} }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "aperture.selector" (list . "frontend") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aperture.labels" . | nindent 8 }}
+        {{- include "aperture.selector" (list . "frontend") | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        {{- include "aperture.podSecurity" 101 | nindent 8 }}
+      containers:
+        - name: frontend
+          image: {{ .Values.images.frontend }}
+          imagePullPolicy: Never
+          ports:
+            - { name: http, containerPort: 8080 }
+          readinessProbe:
+            httpGet: { path: /, port: http }
+            periodSeconds: 5
+          resources:
+            requests: { cpu: 50m, memory: 32Mi }
+          securityContext:
+            {{- include "aperture.containerSecurity" . | nindent 12 }}

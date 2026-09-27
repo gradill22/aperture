@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "aperture.selector" (list . "backend") | nindent 4 }}
+  ports:
+    - { name: http, port: 8000 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "aperture.selector" (list . "backend") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aperture.labels" . | nindent 8 }}
+        {{- include "aperture.selector" (list . "backend") | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        {{- include "aperture.podSecurity" 10001 | nindent 8 }}
+      containers:
+        - name: backend
+          image: {{ .Values.images.backend }}
+          imagePullPolicy: Never
+          env:
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: db, key: DATABASE_URL } }
+            - { name: LLM_BASE_URL, value: "http://llm-relay:{{ .Values.llm.port }}/v1" }
+            - { name: LLM_MODEL, value: {{ .Values.llm.model | quote }} }
+          ports:
+            - { name: http, containerPort: 8000 }
+          readinessProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 5
+          resources:
+            requests: { cpu: 250m, memory: 256Mi }
+          securityContext:
+            {{- include "aperture.containerSecurity" . | nindent 12 }}

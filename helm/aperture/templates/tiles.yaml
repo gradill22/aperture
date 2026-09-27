@@ -1,0 +1,46 @@
+# martin with the snapshot pmtiles baked in: /tiles/{basemap,infrastructure}/{z}/{x}/{y}.
+apiVersion: v1
+kind: Service
+metadata:
+  name: tiles
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "aperture.selector" (list . "tiles") | nindent 4 }}
+  ports:
+    - { name: http, port: 3000 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tiles
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "aperture.selector" (list . "tiles") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aperture.labels" . | nindent 8 }}
+        {{- include "aperture.selector" (list . "tiles") | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        {{- include "aperture.podSecurity" 10001 | nindent 8 }}
+      containers:
+        - name: tiles
+          image: {{ .Values.images.tiles }}
+          imagePullPolicy: Never
+          ports:
+            - { name: http, containerPort: 3000 }
+          readinessProbe:
+            httpGet: { path: /tiles/health, port: http }
+            periodSeconds: 5
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+          securityContext:
+            {{- include "aperture.containerSecurity" . | nindent 12 }}

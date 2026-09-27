@@ -1,0 +1,51 @@
+# MCP adapter over the backend's tool registry: streamable HTTP at http://mcp-server:8001/mcp.
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-server
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "aperture.selector" (list . "mcp-server") | nindent 4 }}
+  ports:
+    - { name: http, port: 8001 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-server
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "aperture.selector" (list . "mcp-server") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aperture.labels" . | nindent 8 }}
+        {{- include "aperture.selector" (list . "mcp-server") | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        {{- include "aperture.podSecurity" 10001 | nindent 8 }}
+      containers:
+        - name: mcp-server
+          image: {{ .Values.images.mcpServer }}
+          imagePullPolicy: Never
+          env:
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: db, key: DATABASE_URL } }
+            # Host headers accepted (DNS-rebinding guard): direct, and via the edge or a port-forward.
+            - { name: MCP_ALLOWED_HOSTS, value: "localhost:*,127.0.0.1:*,mcp-server:*,frontend:*" }
+          ports:
+            - { name: http, containerPort: 8001 }
+          readinessProbe:
+            tcpSocket: { port: http }
+            periodSeconds: 5
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+          securityContext:
+            {{- include "aperture.containerSecurity" . | nindent 12 }}

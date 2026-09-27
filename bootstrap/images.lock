@@ -22,3 +22,12 @@ node@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6    
 mcr.microsoft.com/playwright@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27           # v1.63.0-noble
 aperture/node-deps:latest  local sha256:6a83077b29b054a195ed6c0e2c2249407c88159327cfdcc3fbdcb2e1a116f529  # bootstrap/build_deps.py node, lock 6398220f8984
 aperture/e2e-deps:latest   local sha256:8800558c3d3c77f7851479fe18ff7464b37b0c67aa0379e9b50bc8f400c67831  # bootstrap/build_deps.py e2e, lock 35eef1dc8ee0
+#
+# Phase 4: local Kubernetes (one-time, networked: `minikube start -p aperture --driver=docker
+# --cpus=6 --memory=12g --cni=calico`). Tools via winget: minikube 1.39.0, Helm 4.3.0.
+gcr.io/k8s-minikube/kicbase@sha256:146cd636030e41a49c082986729f4bd97fd68326ff1e3b4221b4c24d61926eeb  # v0.0.51, the node
+#   in-node (minikube preload + CNI): Kubernetes v1.37.0 on containerd 2.3.4, Calico v3.32.2,
+#   CoreDNS v1.14.6, etcd 3.7.0-0, storage-provisioner v5
+# App/db/probe images are never pulled by the cluster: scripts/k8s.py copies them from the local
+# Docker store (`minikube image load`) under <tag>-<linux/amd64 manifest digest12> tags; every pod
+# is imagePullPolicy Never.

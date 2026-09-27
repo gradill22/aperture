@@ -1,0 +1,39 @@
+# One-shot load of the baked-in snapshot. A new Job per release revision; the loader itself
+# skips the load when the database already holds these exact files.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: loader-r{{ .Release.Revision }}
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+    app.kubernetes.io/component: loader
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "aperture.labels" . | nindent 8 }}
+        app.kubernetes.io/component: loader
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        {{- include "aperture.podSecurity" 10001 | nindent 8 }}
+      initContainers:
+        - name: wait-db
+          image: {{ .Values.images.db }}
+          imagePullPolicy: Never
+          command: ["sh", "-c", "until pg_isready -h db -U aperture -d aperture; do sleep 2; done"]
+          securityContext:
+            {{- include "aperture.containerSecurity" . | nindent 12 }}
+      containers:
+        - name: loader
+          image: {{ .Values.images.loader }}
+          imagePullPolicy: Never
+          env:
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: db, key: DATABASE_URL } }
+          resources:
+            requests: { cpu: 500m, memory: 1Gi }
+          securityContext:
+            {{- include "aperture.containerSecurity" . | nindent 12 }}

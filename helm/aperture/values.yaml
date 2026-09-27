@@ -1,0 +1,23 @@
+# Images are built locally and copied into the cluster (`minikube image load`); pods never pull.
+images:
+  db: timescale/timescaledb-ha:pg17 # sha256:3e3440ab... (bootstrap/images.lock)
+  loader: aperture/loader:dev
+  backend: aperture/backend:dev
+  mcpServer: aperture/mcp-server:dev
+  llmRelay: aperture/llm-relay:dev
+  tiles: aperture/tiles:dev
+  frontend: aperture/frontend:dev
+
+db:
+  password: aperture
+  storage: 10Gi
+
+# LM Studio on the host. hostIP is required: the address of host.minikube.internal as seen from
+# the node. It is the only destination outside the namespace any pod may connect to (llm-relay only).
+llm:
+  hostIP: ""
+  port: 1234
+  model: qwen/qwen3.5-9b
+
+frontend:
+  nodePort: 30090
