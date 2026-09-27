@@ -5,8 +5,11 @@ uv run python scripts/verify.py phase1 [--record]    (--record rewrites the gold
 uv run python scripts/verify.py phase2               (needs LM Studio serving qwen/qwen3.5-9b)
 uv run python scripts/verify.py phase3               (APERTURE_PORT=<port> if 8090 is taken)
 uv run python scripts/verify.py phase4               (minikube profile `aperture` running; LM Studio)
+uv run python scripts/verify.py phase5               (Gitea set up, runner registered, `gitea` remote)
 """
 
+import configparser
+import io
 import ipaddress
 import json
 import os
@@ -14,10 +17,13 @@ import re
 import subprocess
 import sys
 import time
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
 import k8s
+
+import ci
 
 ROOT = Path(__file__).resolve().parents[1]
 GOLDEN = ROOT / "scripts" / "golden"
@@ -374,7 +380,9 @@ def check_mcp() -> bool:
     call = {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": params}
     _, called = post_json(MCP_URL, call, MCP_ACCEPT)
     try:
-        first = json.loads(called["result"]["content"][0]["text"])["results"][0]["feature_id"]
+        first = json.loads((called or {})["result"]["content"][0]["text"])["results"][0][
+            "feature_id"
+        ]
     except TypeError, KeyError, IndexError, json.JSONDecodeError:
         first = None
     good = first == DCA
@@ -398,7 +406,7 @@ def phase2() -> bool:
 
     print("chat (live LLM; answers checked against SQL ground truth):", flush=True)
     for name, spec in FENCE_QUESTIONS.items():
-        out = ask(name, spec["question"])
+        out = ask(name, str(spec["question"]))
         ok &= out is not None and check_fence_answer(spec, out)
     out = ask("q2_track", TRACK_QUESTION["question"])
     ok &= out is not None and check_track_answer(TRACK_QUESTION, out)
@@ -436,7 +444,7 @@ def internal_subnets() -> list[ipaddress.IPv4Network]:
         ["docker", "network", "inspect", "aperture-internal", "--format", "{{range .IPAM.Config}}{{.Subnet}} {{end}}"],
         capture_output=True, text=True, check=False,
     ).stdout.split()  # fmt: skip
-    return [ipaddress.ip_network(n) for n in out if ":" not in n]
+    return [ipaddress.IPv4Network(n) for n in out if ":" not in n]
 
 
 def edge_sockets_ok() -> bool:
@@ -671,17 +679,250 @@ def phase4() -> bool:
         return False
     print("chat (live LLM through the relay; checked against SQL in the cluster DB):", flush=True)
     spec = FENCE_QUESTIONS["q1_dca"]
-    out = ask("q1_dca", spec["question"], EVIDENCE4)
+    out = ask("q1_dca", str(spec["question"]), EVIDENCE4)
     ok &= out is not None and check_fence_answer(spec, out)
     out = ask("q2_track", TRACK_QUESTION["question"], EVIDENCE4)
     ok &= out is not None and check_track_answer(TRACK_QUESTION, out)
     return ok
 
 
-GATES = {"phase0": phase0, "phase1": phase1, "phase2": phase2, "phase3": phase3, "phase4": phase4}
+# --------------------------------------------------------------------------- phase 5
+
+EVIDENCE5 = ROOT / ".verify" / "phase5"
+GITEA_URL = (
+    f"http://localhost:{os.environ.get('GITEA_PORT') or ci.env_value('GITEA_PORT') or '3000'}"
+)
+CI_JOBS = {"egress-check", "lint", "typecheck", "test", "web", "helm", "build"}
+# app.ini (section, key) -> required value: what keeps Gitea from reaching or serving the internet.
+GITEA_SETTINGS = {
+    ("security", "install_lock"): "true",
+    ("server", "offline_mode"): "true",
+    ("server", "disable_ssh"): "true",
+    ("service", "disable_registration"): "true",
+    ("picture", "disable_gravatar"): "true",
+    ("picture", "enable_federated_avatar"): "false",
+    ("cron.update_checker", "enabled"): "false",
+    ("migrations", "allow_localnetworks"): "false",
+    ("mirror", "enabled"): "false",
+    ("actions", "enabled"): "true",
+    ("actions", "default_actions_url"): "self",
+}
+RUN_TIMEOUT_S = 45 * 60
+
+
+def ci_compose(*args: str) -> subprocess.CompletedProcess:
+    cmd = ["docker", "compose", "-f", "ci/docker-compose.yml", *args]
+    return subprocess.run(cmd, cwd=ROOT, env=ENV, capture_output=True, text=True, check=False)
+
+
+def gitea_config_ok() -> bool:
+    """The effective app.ini (the install page writes it) keeps every offline setting."""
+    ini = configparser.ConfigParser(interpolation=None, strict=False)
+    ini.read_string(ci_compose("exec", "-T", "gitea", "cat", "/etc/gitea/app.ini").stdout)
+    bad = {
+        f"{s}.{k}": ini.get(s, k, fallback=None)
+        for (s, k), want in GITEA_SETTINGS.items()
+        if (ini.get(s, k, fallback="") or "").strip().lower() != want
+    }
+    print(
+        f"  gitea app.ini offline settings ({len(GITEA_SETTINGS)}): {'ok' if not bad else f'FAIL {bad}'}"
+    )
+    return not bad
+
+
+def ci_networks_ok() -> bool:
+    """Gitea and the runner sit only on the internal network; the edge proxy is the one way in."""
+    fmt = "{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}"
+    want = {
+        "gitea": {"aperture-ci"},
+        "runner": {"aperture-ci"},
+        "gitea-edge": {"aperture-ci", "aperture-ci_ci-edge"},
+    }
+    ok = True
+    for svc, nets in want.items():
+        cid = ci_compose("ps", "-q", svc).stdout.strip()
+        res = subprocess.run(["docker", "inspect", "--format", fmt, cid],
+                             capture_output=True, text=True, check=False)  # fmt: skip
+        have = set(res.stdout.split()) if cid else set()
+        ok &= have == nets
+        print(
+            f"  {svc} networks: {sorted(have) or 'not running'} {'ok' if have == nets else 'FAIL'}"
+        )
+    internal = subprocess.run(
+        ["docker", "network", "inspect", "aperture-ci", "--format", "{{.Internal}}"],
+        capture_output=True, text=True, check=False,
+    ).stdout.strip()  # fmt: skip
+    print(f"  aperture-ci internal: {internal} {'ok' if internal == 'true' else 'FAIL'}")
+    return ok and internal == "true"
+
+
+def ci_egress_blocked() -> bool:
+    ok = True
+    for url in EGRESS_TARGETS[:2]:
+        res = ci_compose("exec", "-T", "gitea", "curl", "-sS", "-m", "5", "-o", "/dev/null", url)
+        blocked = res.returncode != 0
+        print(f"  gitea -> {url}: {'blocked' if blocked else 'REACHABLE'}")
+        ok &= blocked
+    return ok
+
+
+def gitea_edge_ok() -> bool:
+    conf = ci_compose("exec", "-T", "gitea-edge", "nginx", "-T").stdout
+    passes = re.findall(r"^\s*\w+_pass\s+([^;]+);", conf, re.MULTILINE)
+    targets = {re.sub(r"^\w+://", "", t).split("/")[0] for t in passes}
+    resolvers = re.findall(r"^\s*resolver\s", conf, re.MULTILINE)
+    ok = bool(conf) and targets == {"gitea:3000"} and not resolvers
+    print(
+        f"  gitea-edge upstreams: {sorted(targets)}; resolver directives: {len(resolvers)} {'ok' if ok else 'FAIL'}"
+    )
+    return ok
+
+
+def git_out(*args: str) -> str:
+    res = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=False)
+    return res.stdout.strip() if res.returncode == 0 else ""
+
+
+def gitea_api(path: str) -> tuple[int, str]:
+    """GET the local Gitea API with the host's curl; a read token in ci/.env (GITEA_READ_TOKEN)
+    is sent if present, on stdin so it never appears in a process list."""
+    token = ci.env_value("GITEA_READ_TOKEN")
+    cmd = [
+        "curl",
+        "-s",
+        "-m",
+        "30",
+        "-w",
+        "\n%{http_code}",
+        "-H",
+        "@-",
+        f"{GITEA_URL}/api/v1{path}",
+    ]
+    header = f"Authorization: token {token}\n" if token else ""
+    res = subprocess.run(cmd, input=header, capture_output=True, text=True, encoding="utf-8",
+                         check=False)  # fmt: skip
+    body, _, status = res.stdout.rpartition("\n")
+    return int(status or 0), body
+
+
+def push_head() -> tuple[str, str] | None:
+    """Push the committed HEAD to the `gitea` remote; returns (owner/repo, sha)."""
+    url = git_out("remote", "get-url", "gitea")
+    m = re.match(r"^https?://[^/]+/([^/]+/[^/]+?)(?:\.git)?/?$", url)
+    if not m:
+        print(f"  no usable `gitea` remote ({url or 'missing'}); see ci/README.md")
+        return None
+    if dirty := git_out("status", "--porcelain"):
+        print(
+            f"  working tree has {len(dirty.splitlines())} uncommitted change(s): CI tests commits"
+        )
+        return None
+    sha, branch = git_out("rev-parse", "HEAD"), git_out("branch", "--show-current") or "main"
+    if not run("git", "push", "gitea", f"HEAD:refs/heads/{branch}"):
+        return None
+    return m.group(1), sha
+
+
+def wait_for_run(repo: str, sha: str) -> dict | None:
+    deadline, last = time.monotonic() + RUN_TIMEOUT_S, ""
+    while time.monotonic() < deadline:
+        status, body = gitea_api(f"/repos/{repo}/actions/runs?head_sha={sha}&event=push")
+        if status != 200:
+            print(f"  actions API: HTTP {status} {body[:200]!r}")
+            if status in (401, 403, 404):
+                print("  (a private repo needs a read token in ci/.env as GITEA_READ_TOKEN)")
+            return None
+        runs = [r for r in json.loads(body).get("workflow_runs") or [] if r.get("head_sha") == sha]
+        if runs:
+            latest = max(runs, key=lambda r: r["id"])
+            state = f"run {latest['id']}: {latest.get('status')}"
+            if state != last:
+                print(f"  {state}", flush=True)
+                last = state
+            if latest.get("status") == "completed":
+                return latest
+        time.sleep(10)
+    print(f"  no completed run for {sha[:12]} within {RUN_TIMEOUT_S // 60} min")
+    return None
+
+
+def evidence(what: str, good: bool) -> bool:
+    print(f"  {what}: {'ok' if good else 'FAIL'}")
+    return good
+
+
+def run_jobs_ok(repo: str, run_: dict) -> bool:
+    status, body = gitea_api(f"/repos/{repo}/actions/runs/{run_['id']}/jobs")
+    jobs = (json.loads(body).get("jobs") or []) if status == 200 else []
+    logs: dict[str, str] = {}
+    for job in jobs:
+        code, text = gitea_api(f"/repos/{repo}/actions/jobs/{job['id']}/logs")
+        logs[job["name"]] = text if code == 200 else ""
+        (EVIDENCE5 / f"{job['name']}.log").write_text(logs[job["name"]], encoding="utf-8")
+        print(f"  job {job['name']}: {job.get('conclusion') or job.get('status')}")
+    names = {j["name"] for j in jobs}
+    ok = evidence(f"jobs {sorted(CI_JOBS)} all ran", names == CI_JOBS)
+    ok &= all(j.get("conclusion") == "success" for j in jobs)
+    # The offline claims were exercised, not just exited 0.
+    egress = logs.get("egress-check", "")
+    ok &= evidence(
+        "egress-check log: 3 targets blocked, Gitea reachable",
+        egress.count(": blocked (") == 3 and "api/healthz: ok" in egress,
+    )
+    built = re.search(r"built (\d+)/(\d+) image\(s\)", logs.get("build", ""))
+    ok &= evidence(
+        "build log: every app image built offline",
+        built is not None and built[1] == built[2] and built[1] != "0",
+    )
+    return ok and run_.get("conclusion") == "success"
+
+
+def phase5() -> bool:
+    EVIDENCE5.mkdir(parents=True, exist_ok=True)
+    print("local checks (what CI runs):", flush=True)
+    ok = run("uv", "run", "ruff", "check", ".")
+    ok &= run("uv", "run", "ruff", "format", "--check", ".")
+    ok &= run("uv", "run", "mypy")
+    ok &= run(sys.executable, "scripts/lint_network.py")
+    ok &= run(sys.executable, "bootstrap/build_deps.py", "--check")
+    print("CI stack:", flush=True)
+    ok &= ci.up()
+    if not ci.runner_registered():
+        print(
+            "  runner not registered: put RUNNER_TOKEN in ci/.env, then `uv run python scripts/ci.py up`"
+        )
+        return False
+    ok &= gitea_config_ok()
+    ok &= ci_networks_ok()
+    ok &= ci_egress_blocked()
+    ok &= gitea_edge_ok()
+    if not ok:
+        return False
+    print("CI run for HEAD:", flush=True)
+    pushed = push_head()
+    if not pushed:
+        return False
+    repo, sha = pushed
+    run_ = wait_for_run(repo, sha)
+    if run_ is None:
+        return False
+    (EVIDENCE5 / "run.json").write_text(json.dumps(run_, indent=2), encoding="utf-8")
+    print(f"  {repo}@{sha[:12]}: {run_.get('conclusion')}  ({run_.get('html_url', '')})")
+    return run_jobs_ok(repo, run_)
+
+
+GATES: dict[str, Callable[..., bool]] = {
+    "phase0": phase0,
+    "phase1": phase1,
+    "phase2": phase2,
+    "phase3": phase3,
+    "phase4": phase4,
+    "phase5": phase5,
+}
 
 if __name__ == "__main__":
-    sys.stdout.reconfigure(line_buffering=True)  # progress shows up live when logged to a file
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(line_buffering=True)  # progress shows up live when logged to a file
     gate = sys.argv[1] if len(sys.argv) > 1 else ""
     if gate not in GATES:
         sys.exit(__doc__)

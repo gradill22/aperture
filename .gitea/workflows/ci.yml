@@ -1,0 +1,131 @@
+# Aperture CI on the local Gitea. Offline by construction: no `uses:` actions, job images are
+# local (bootstrap/deps/ci-*.Dockerfile, never pulled), and every job container sits on the
+# internal aperture-ci network. The egress-check job proves the last point on every run.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+env:
+  CI_GIT_URL: http://gitea:3000
+  CI_TOKEN: ${{ gitea.token }}
+
+jobs:
+  egress-check:
+    runs-on: ci-python
+    steps:
+      - name: internet, DNS and the Docker host are unreachable; Gitea is reachable
+        shell: bash
+        run: |
+          python - <<'EOF'
+          import sys, urllib.error, urllib.request
+
+          def reachable(url):
+              try:
+                  urllib.request.urlopen(url, timeout=5)
+              except urllib.error.HTTPError:
+                  return True  # an HTTP answer of any status means we got there
+              except OSError as e:
+                  return f"blocked ({type(e).__name__}: {getattr(e, 'reason', e)})"
+              return True
+
+          bad = 0
+          for url in ("https://1.1.1.1", "http://example.com", "http://host.docker.internal:1234/v1/models"):
+              r = reachable(url)
+              bad += r is True
+              print(f"{url}: {'REACHABLE' if r is True else r}")
+          r = reachable("http://gitea:3000/api/healthz")
+          print(f"control http://gitea:3000/api/healthz: {'ok' if r is True else r}")
+          sys.exit(1 if bad or r is not True else 0)
+          EOF
+
+  lint:
+    runs-on: ci-python
+    steps:
+      - run: ci-checkout
+      - name: ruff check
+        run: ruff check .
+      - name: ruff format --check
+        run: ruff format --check .
+      - name: network-import lint
+        run: python scripts/lint_network.py
+
+  typecheck:
+    runs-on: ci-python
+    steps:
+      - run: ci-checkout
+      - name: mypy
+        run: mypy
+
+  test:
+    runs-on: ci-python
+    services:
+      db:
+        image: timescale/timescaledb-ha:pg17
+        env:
+          POSTGRES_USER: aperture
+          POSTGRES_PASSWORD: aperture
+          POSTGRES_DB: aperture
+        options: --shm-size=1g
+    env:
+      TEST_DATABASE_URL: postgresql://aperture:aperture@db:5432/aperture
+    steps:
+      - run: ci-checkout
+      - name: schema (db/init, as the compose and Helm databases get it)
+        run: python scripts/ci_db_init.py
+      - name: pytest
+        run: pytest -q
+
+  web:
+    runs-on: ci-node
+    steps:
+      - run: ci-checkout
+      # Same layout as frontend/Dockerfile: sources over the prebuilt node_modules.
+      - name: stage sources
+        run: mkdir -p /src/data && cp data/aoi.json /src/data/ && cp -r frontend/. /src/frontend/
+      - name: eslint
+        working-directory: /src/frontend
+        run: npm run lint
+      - name: tsc
+        working-directory: /src/frontend
+        run: npm run typecheck
+      - name: vitest
+        working-directory: /src/frontend
+        run: npm test
+
+  helm:
+    runs-on: ci-python
+    steps:
+      - run: ci-checkout
+      - name: helm lint
+        run: helm lint --strict helm/aperture --set llm.hostIP=192.0.2.1
+      - name: helm template (every image local, never pulled)
+        shell: bash
+        run: |
+          helm template aperture helm/aperture --set llm.hostIP=192.0.2.1 > /tmp/rendered.yaml
+          policies=$(grep -o 'imagePullPolicy: .*' /tmp/rendered.yaml | sort -u)
+          echo "$policies"
+          test "$policies" = "imagePullPolicy: Never"
+      - name: chart init SQL matches db/init
+        run: diff -r db/init helm/aperture/files/db-init
+
+  build:
+    runs-on: ci-python
+    needs: [egress-check, lint, typecheck, test, web, helm]
+    container:
+      image: aperture/ci-python:latest
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - aperture-ci-data:/ci-data:ro
+    steps:
+      - run: ci-checkout
+      - name: deps images match the lockfiles
+        run: python bootstrap/build_deps.py --check
+      - name: snapshot artifacts (seeded, gitignored) match MANIFEST.json
+        run: |
+          cp -r /ci-data/snapshot/adsb /ci-data/snapshot/osm data/snapshot/
+          cp -r /ci-data/tiles/. data/tiles/
+          python data/snapshot/verify.py
+      - name: build every app image with --network=none
+        run: python scripts/ci_build.py

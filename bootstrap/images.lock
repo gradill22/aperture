@@ -11,7 +11,7 @@ timescale/timescaledb-ha@sha256:3e3440ab4c2aa585e743b1d8466cda9bbf18b6c598ec7806
 python@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d              # python:3.14-slim
 ghcr.io/astral-sh/uv@sha256:04d046b13e60d6bcec73cbc5e1cad25d680dea90c8573340950a0ac2d1aef424  # uv 0.12.19
 curlimages/curl@sha256:58adaa4e8dca9c988bae2aba4ab3434a0bb2da16bbe3f92dec39ec7785166777      # probe
-aperture/py-deps:latest  local sha256:ada1159fffc03bff658955f6f25b7e36de92a1574af8515ca7eff2e52619d197  # bootstrap/build_deps.py, lock d6e3a19adbef (Phase 2: + mcp, httpx, tzdata)
+aperture/py-deps:latest  local sha256:f5416379d04538e4057ed8182d76aed9a03870195212d4de352bb2a6c6d230de  # bootstrap/build_deps.py, lock e754cb6761c9 (Phase 2: + mcp, httpx, tzdata; Phase 5: + mypy)
 #
 # Phase 2: no new third-party images. llm-relay is stdlib Python on the pinned python:3.14-slim.
 #
@@ -31,3 +31,14 @@ gcr.io/k8s-minikube/kicbase@sha256:146cd636030e41a49c082986729f4bd97fd68326ff1e3
 # App/db/probe images are never pulled by the cluster: scripts/k8s.py copies them from the local
 # Docker store (`minikube image load`) under <tag>-<linux/amd64 manifest digest12> tags; every pod
 # is imagePullPolicy Never.
+#
+# Phase 5: local CI (ci/docker-compose.yml; the stack and every job container sit on the internal
+# aperture-ci network). Job images carry everything a job needs; nothing is fetched during a run.
+gitea/gitea@sha256:1c17ecaead42eb3b5391553d8708103a4beb0e86edf5b9ebc1eb269c318845f2         # 1.27.3-rootless
+gitea/act_runner@sha256:b5c35d6bdbb9bb25e531230bfc7cc663cb751406cbec90a2a891b85fea54de86    # 0.6.1
+docker@sha256:3f4743208d2338c934d7b8bcfbe1bb54c0b2355c510ad5e0f31c0c4a54bd704e              # 29.7.2-cli: docker CLI + buildx 0.36.1 + compose 5.5.0 copied into ci-python
+#   helm-v4.3.0-linux-amd64.tar.gz  sha256:86584a54def73570558f66f5111cc53dfed56689637ae32c1201205d494f54fb (get.helm.sh, ADD --checksum)
+#   git 2.47.3 from deb.debian.org (apt, at image build) in both job images
+aperture/ci-python:latest  local sha256:d5c51448a98246516f3e8bfebd9a45370a70bb869e5d215d5a58e38212448870  # bootstrap/build_deps.py ci-python, lock 38902eae15f6
+aperture/ci-node:latest    local sha256:addb03509eb7bcd697f54dd06672e50d066648cd58580ea66ebcd3f339440a25  # bootstrap/build_deps.py ci-node, lock 393c9ff3e288
+# The `test` job's db service is the Phase 1 timescale/timescaledb-ha:pg17 (already local; never pulled).

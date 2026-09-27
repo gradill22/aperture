@@ -168,7 +168,9 @@ NEAREST_AIRPORT = text(
 async def describe_end(conn: AsyncConnection, lon: float, lat: float, alt_ft: int | None) -> str:
     """Where a leg starts/ends, stated only as far as the data supports it."""
     row = (await conn.execute(NEAREST_AIRPORT, {"x": lon, "y": lat})).first()
-    where = f"near {row.label}" if row else f"at {lon:.3f},{lat:.3f} (no mapped airport within 5 km)"
+    where = (
+        f"near {row.label}" if row else f"at {lon:.3f},{lat:.3f} (no mapped airport within 5 km)"
+    )
     height = "on the ground" if alt_ft == 0 else f"{alt_ft} ft" if alt_ft is not None else "alt n/a"
     return f"{where}, {height}"
 
@@ -199,8 +201,12 @@ async def get_entity_track(conn: AsyncConnection, args: TrackInput, ctx: ToolCon
                 "end": ctx.fmt(leg["end"]),
                 "n_points": leg["n_points"],
                 "max_alt_ft": max((a for a in leg["alt_ft"] if a is not None), default=None),
-                "first_seen": await describe_end(conn, *coords[0], leg["alt_ft"][0]),
-                "last_seen": await describe_end(conn, *coords[-1], leg["alt_ft"][-1]),
+                "first_seen": await describe_end(
+                    conn, coords[0][0], coords[0][1], leg["alt_ft"][0]
+                ),
+                "last_seen": await describe_end(
+                    conn, coords[-1][0], coords[-1][1], leg["alt_ft"][-1]
+                ),
             }
             for leg in legs
             for coords in [leg["geometry"]["coordinates"]]
@@ -238,7 +244,9 @@ class GeofenceInput(ToolInput):
     end: str | None = Field(None, description=f"Window end (default: whole day). {TIME_ARG}")
 
 
-async def geofence_alert(conn: AsyncConnection, args: GeofenceInput, ctx: ToolContext) -> ToolResult:
+async def geofence_alert(
+    conn: AsyncConnection, args: GeofenceInput, ctx: ToolContext
+) -> ToolResult:
     day = await queries.dataset_info(conn)
     if day is None:
         raise queries.BadRequest("database not loaded yet")
@@ -322,7 +330,11 @@ def openai_tools() -> list[dict[str, Any]]:
     return [
         {
             "type": "function",
-            "function": {"name": t.name, "description": t.description, "parameters": t.json_schema()},
+            "function": {
+                "name": t.name,
+                "description": t.description,
+                "parameters": t.json_schema(),
+            },
         }
         for t in REGISTRY.values()
     ]

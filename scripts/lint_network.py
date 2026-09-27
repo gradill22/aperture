@@ -32,6 +32,8 @@ def network_imports(path: Path) -> list[str]:
             names = [a.name for a in node.names]
         elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
             names = [node.module]
+        else:
+            continue
         found += [f"{n} (line {node.lineno})" for n in names if n.split(".")[0] in NETWORK_MODULES]
     return found
 

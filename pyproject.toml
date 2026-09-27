@@ -14,11 +14,33 @@ aperture-mcp = { workspace = true }
 members = ["data", "db/loader", "backend", "mcp-server"]
 
 [dependency-groups]
-dev = ["ruff", "pytest", "httpx", "respx", "anyio"]
+dev = [
+    "ruff",
+    "pytest",
+    "httpx",
+    "respx",
+    "anyio",
+    "mypy",
+]
 
 [tool.ruff]
 line-length = 100
 target-version = "py314"
+
+[tool.mypy]
+# First-party code (CI `typecheck` job). Workspace packages resolve from their source dirs, as in
+# the app images (PYTHONPATH) rather than as installed packages.
+files = [
+    "backend/aperture_api", "mcp-server/aperture_mcp", "db/loader/aperture_loader",
+    "relay/llm_relay.py", "scripts",
+]
+mypy_path = ["backend", "mcp-server", "db/loader", "relay", "scripts"]
+explicit_package_bases = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["pyarrow", "pyarrow.*"]  # ships no type information
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["backend/tests", "mcp-server/tests"]

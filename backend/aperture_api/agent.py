@@ -7,7 +7,7 @@ the llm-relay container that forwards to LM Studio on the host).
 import json
 import os
 import re
-from typing import Any
+from typing import Any, Literal
 
 import httpx
 from pydantic import ValidationError
@@ -75,7 +75,9 @@ async def _run_tool(engine: AsyncEngine, call: dict, ctx: tools.ToolContext) -> 
         async with engine.connect() as conn:
             result = await tools.call_tool(conn, name, args, ctx)
     except ValidationError as exc:
-        errors = [{"field": ".".join(map(str, e["loc"])), "problem": e["msg"]} for e in exc.errors()]
+        errors = [
+            {"field": ".".join(map(str, e["loc"])), "problem": e["msg"]} for e in exc.errors()
+        ]
         payload = {"error": "invalid arguments", "details": errors}
     except (json.JSONDecodeError, LookupError, queries.BadRequest, DBAPIError) as exc:
         detail = str(exc.orig) if isinstance(exc, DBAPIError) else str(exc)
@@ -88,7 +90,10 @@ async def _run_tool(engine: AsyncEngine, call: dict, ctx: tools.ToolContext) -> 
 
 
 async def chat(
-    engine: AsyncEngine, client: httpx.AsyncClient, history: list[dict], tz: str = "UTC"
+    engine: AsyncEngine,
+    client: httpx.AsyncClient,
+    history: list[dict],
+    tz: Literal["UTC", "ET"] = "UTC",
 ) -> dict:
     """Run the tool loop for one analyst turn.
 

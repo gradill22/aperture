@@ -1,0 +1,88 @@
+# Local CI: Gitea + act_runner, fully offline.
+#
+#   uv run python scripts/ci.py up       seed the CI data volume, start the stack
+#   open http://localhost:3000           (first start: the install page, where you create the admin)
+#
+# Networks
+#   aperture-ci   internal: Gitea, the runner, and every CI job/service container. No route out.
+#   ci-edge       only the `gitea-edge` proxy, so the UI/git port can be published on 127.0.0.1
+#                 (Docker Desktop cannot publish ports from an internal network). Gitea itself is
+#                 never on it.
+# The runner drives the host Docker daemon through its socket (that is how act_runner starts job
+# containers); only the `build` job gets the socket mounted into its job container.
+name: aperture-ci
+
+services:
+  gitea:
+    image: gitea/gitea:1.27.3-rootless@sha256:1c17ecaead42eb3b5391553d8708103a4beb0e86edf5b9ebc1eb269c318845f2
+    environment:
+      GITEA__database__DB_TYPE: sqlite3
+      GITEA__server__DOMAIN: localhost
+      GITEA__server__HTTP_PORT: "3000"
+      GITEA__server__ROOT_URL: http://localhost:${GITEA_PORT:-3000}/
+      GITEA__server__LOCAL_ROOT_URL: http://gitea:3000/
+      GITEA__server__DISABLE_SSH: "true"
+      GITEA__server__OFFLINE_MODE: "true" # no CDN assets, no avatars from outside
+      GITEA__actions__ENABLED: "true"
+      GITEA__actions__DEFAULT_ACTIONS_URL: self # `uses:` could only resolve against this Gitea
+      GITEA__service__DISABLE_REGISTRATION: "true"
+      GITEA__picture__DISABLE_GRAVATAR: "true"
+      GITEA__picture__ENABLE_FEDERATED_AVATAR: "false"
+      GITEA__cron.update_checker__ENABLED: "false"
+      GITEA__migrations__ALLOW_LOCALNETWORKS: "false"
+      GITEA__mirror__ENABLED: "false"
+      GITEA__webhook__ALLOWED_HOST_LIST: loopback
+      GITEA__log__LEVEL: Info
+    volumes:
+      - gitea-data:/var/lib/gitea
+      - gitea-config:/etc/gitea
+    networks: [aperture-ci]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/api/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  gitea-edge:
+    image: nginxinc/nginx-unprivileged:1.30.5-alpine@sha256:4714e0b1b2577eaa1a6131d07c958b67f0eb68e6d0521e90c6e5287db8cf0bc5
+    volumes:
+      - ./gitea-edge.conf:/etc/nginx/conf.d/default.conf:ro
+    ports: ["127.0.0.1:${GITEA_PORT:-3000}:8080"]
+    networks: [aperture-ci, ci-edge]
+    depends_on:
+      gitea: { condition: service_healthy }
+    restart: unless-stopped
+
+  runner:
+    image: gitea/act_runner:0.6.1@sha256:b5c35d6bdbb9bb25e531230bfc7cc663cb751406cbec90a2a891b85fea54de86
+    environment:
+      CONFIG_FILE: /config.yaml
+      GITEA_INSTANCE_URL: http://gitea:3000
+      GITEA_RUNNER_NAME: aperture-local
+      # Only read on first registration (afterwards /data/.runner holds the runner's credentials).
+      # You put it in ci/.env yourself; see ci/.env.example.
+      GITEA_RUNNER_REGISTRATION_TOKEN: ${RUNNER_TOKEN:-}
+    volumes:
+      - ./runner.yaml:/config.yaml:ro
+      - runner-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks: [aperture-ci]
+    depends_on:
+      gitea: { condition: service_healthy }
+    restart: unless-stopped
+
+networks:
+  aperture-ci:
+    name: aperture-ci # fixed: runner.yaml attaches job containers to it by name
+    internal: true
+  ci-edge: {}
+
+volumes:
+  gitea-data:
+  gitea-config:
+  runner-data:
+  # Snapshot artifacts for the `build` job (gitignored, so not in the checkout); seeded by
+  # scripts/ci.py and verified against data/snapshot/MANIFEST.json inside the job.
+  ci-data:
+    name: aperture-ci-data

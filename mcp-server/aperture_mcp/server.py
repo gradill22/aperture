@@ -52,7 +52,7 @@ def adapter(tool: tools.Tool):
     keyword-only parameter carrying its type, constraints and description.
     """
 
-    async def run(ctx: Context, **kwargs: Any) -> str:
+    async def run(ctx: Context[State, Any], **kwargs: Any) -> str:
         state: State = ctx.request_context.lifespan_context
         try:
             async with state.engine.connect() as conn:
@@ -67,12 +67,17 @@ def adapter(tool: tools.Tool):
 
     params = [inspect.Parameter("ctx", inspect.Parameter.KEYWORD_ONLY, annotation=Context)]
     for name, field in tool.input_model.model_fields.items():
-        annotation = Annotated[(field.annotation, *field.metadata, Field(description=field.description))]
+        # Built at runtime from the model, so not a static type.
+        annotation = Annotated[
+            (field.annotation, *field.metadata, Field(description=field.description))  # type: ignore[name-defined]
+        ]
         default = inspect.Parameter.empty if field.is_required() else field.default
         params.append(
-            inspect.Parameter(name, inspect.Parameter.KEYWORD_ONLY, annotation=annotation, default=default)
+            inspect.Parameter(
+                name, inspect.Parameter.KEYWORD_ONLY, annotation=annotation, default=default
+            )
         )
-    run.__signature__ = inspect.Signature(params, return_annotation=str)
+    run.__signature__ = inspect.Signature(params, return_annotation=str)  # type: ignore[attr-defined]
     run.__name__ = tool.name
     return run
 

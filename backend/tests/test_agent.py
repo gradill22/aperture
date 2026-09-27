@@ -19,7 +19,9 @@ def tool_call(call_id: str, name: str, args: dict) -> httpx.Response:
         "tool_calls": [{"id": call_id, "type": "function",
                         "function": {"name": name, "arguments": json.dumps(args)}}],
     }  # fmt: skip
-    return httpx.Response(200, json={"choices": [{"message": message, "finish_reason": "tool_calls"}]})
+    return httpx.Response(
+        200, json={"choices": [{"message": message, "finish_reason": "tool_calls"}]}
+    )
 
 
 def answer(text: str) -> httpx.Response:
@@ -33,7 +35,9 @@ def last_tool_result(request: httpx.Request) -> dict:
 
 
 def ask(client, question: str, tz: str = "UTC"):
-    return client.post("/chat", json={"messages": [{"role": "user", "content": question}], "tz": tz})
+    return client.post(
+        "/chat", json={"messages": [{"role": "user", "content": question}], "tz": tz}
+    )
 
 
 def test_search_then_geofence(client, dca_id):
@@ -44,7 +48,9 @@ def test_search_then_geofence(client, dca_id):
         requests.append(body)
         match len(requests):
             case 1:
-                return tool_call("c1", "search_entities", {"query": "Reagan National", "kind": "feature"})
+                return tool_call(
+                    "c1", "search_entities", {"query": "Reagan National", "kind": "feature"}
+                )
             case 2:
                 feature_id = last_tool_result(request)["results"][0]["feature_id"]
                 return tool_call("c2", "geofence_alert", {
@@ -79,7 +85,14 @@ def test_search_then_geofence(client, dca_id):
     }  # fmt: skip
     assert "UTC" in requests[0]["messages"][0]["content"]
     replay = requests[2]["messages"]
-    assert [m["role"] for m in replay] == ["system", "user", "assistant", "tool", "assistant", "tool"]
+    assert [m["role"] for m in replay] == [
+        "system",
+        "user",
+        "assistant",
+        "tool",
+        "assistant",
+        "tool",
+    ]
     assert all("reasoning_content" not in m for m in replay)
     assert replay[3]["tool_call_id"] == "c1" and replay[5]["tool_call_id"] == "c2"
 
@@ -141,7 +154,9 @@ def test_step_cap_forces_an_answer(client):
     assert len(bodies) == agent.MAX_STEPS + 1
 
 
-@pytest.mark.parametrize("failure", [httpx.ConnectError("refused"), httpx.Response(500, text="boom")])
+@pytest.mark.parametrize(
+    "failure", [httpx.ConnectError("refused"), httpx.Response(500, text="boom")]
+)
 def test_llm_unavailable_is_502(client, failure):
     with respx.mock() as mock:
         route = mock.post(COMPLETIONS)

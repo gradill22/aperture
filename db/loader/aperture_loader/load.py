@@ -22,7 +22,7 @@ import pyarrow.parquet as pq
 LAYERS = ("airports", "ports", "government", "military")
 
 # (key, accepted values or None for any) in priority order; mirrors the snapshot tag filters.
-KIND_RULES = {
+KIND_RULES: dict[str, list[tuple[str, set[str] | None]]] = {
     "airports": [("aeroway", {"aerodrome", "heliport", "helipad", "runway", "terminal"})],
     "ports": [
         ("landuse", {"port"}),
@@ -167,7 +167,7 @@ def main() -> None:
         print(f"aircraft: {n_aircraft}, adsb_position: {n_positions}", flush=True)
         cur.execute("REFRESH MATERIALIZED VIEW flight")
         cur.execute("SELECT count(*) FROM flight")
-        n_flights = cur.fetchone()[0]
+        (n_flights,) = cur.fetchone() or (0,)
         counts = {"osm_feature": n_features, "aircraft": n_aircraft,
                   "adsb_position": n_positions, "flight": n_flights}  # fmt: skip
         cur.execute(

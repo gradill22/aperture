@@ -1,0 +1,32 @@
+# act_runner config (ci/docker-compose.yml mounts it at /config.yaml).
+log:
+  level: info
+
+runner:
+  file: /data/.runner
+  capacity: 1
+  timeout: 1h
+  fetch_timeout: 5s
+  fetch_interval: 2s
+  # runs-on labels -> local images (built by bootstrap/build_deps.py; never pulled)
+  labels:
+    - "ci-python:docker://aperture/ci-python:latest"
+    - "ci-node:docker://aperture/ci-node:latest"
+
+cache:
+  enabled: false
+
+container:
+  # Every job and service container joins the internal network: no route to the internet.
+  network: aperture-ci
+  privileged: false
+  force_pull: false
+  force_rebuild: false
+  # Don't hand the Docker socket to every job; the build job mounts it explicitly.
+  docker_host: "-"
+  valid_volumes:
+    - /var/run/docker.sock
+    - aperture-ci-data
+
+host:
+  workdir_parent:
