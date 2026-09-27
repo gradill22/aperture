@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { clearFence, selectHit } from "../actions";
+import { formatKm } from "../export";
 import { hitKey, store, useStore } from "../store";
 import { formatClock, formatDateTime, formatDuration, parseIso } from "../time";
 import type { GeofenceHit } from "../types";
@@ -73,6 +74,7 @@ export function GeofencePanel() {
             <span className="muted">
               {formatDateTime(fence.start, tz)} → {formatDateTime(fence.end, tz)}
               {fence.source === "chat" ? " · from chat" : ""}
+              {fence.around ? ` · ${formatKm(fence.around.buffer_m)} around ${fence.around.name}` : ""}
             </span>
           </p>
           <ol className="hits" ref={listRef} data-testid="hits">

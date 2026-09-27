@@ -44,6 +44,13 @@ const input = (over: Partial<FindingInput> = {}): FindingInput => ({
 });
 
 describe("finding export", () => {
+  it("describes a place-buffer fence", () => {
+    const md = findingMarkdown(
+      input({ fenceSource: "place", fenceAround: { name: "Ronald Reagan Washington National Airport", osm: "way/123", buffer_m: 1500 } }),
+    );
+    expect(md).toContain("- **Source:** 1.5 km buffer around Ronald Reagan Washington National Airport (OSM way/123)");
+  });
+
   it("has identity, times, note, fence and provenance", () => {
     const md = findingMarkdown(input());
     expect(md).toMatch(/^# Finding: N101HQ \(a00929\) crossed geofence/);

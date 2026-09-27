@@ -14,17 +14,18 @@ import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import { useEffect, useRef } from "react";
 import aoi from "../../../data/aoi.json";
-import { runGeofence, selectAircraft, selectHit } from "../actions";
+import { runGeofence, selectAircraft, selectHit, selectPlace } from "../actions";
 import { HOLD_S, MAX_GAP_S, TRAIL_S, type Playback } from "../playback";
 import { hitKey, store, type State } from "../store";
 import { INFRA_LAYERS, buildStyle, infraLayerIds } from "../style";
-import type { Fence } from "../types";
+import type { Fence, Layer } from "../types";
 
 setWorkerUrl(workerUrl);
 
 const FENCE = "#2563eb";
 const HIT = "#ea580c";
 const TRACK = "#0f766e";
+const PIN = "#f59e0b";
 const REDRAW_MS = 50;
 
 const fc = (features: Feature[]): FeatureCollection => ({ type: "FeatureCollection", features });
@@ -70,7 +71,7 @@ function planeIcon(size: number): ImageData {
 
 function addOverlays(map: MlMap): void {
   map.addImage("plane", planeIcon(64), { sdf: true, pixelRatio: 2 });
-  for (const id of ["fence", "hit-legs", "tracks", "trails", "aircraft", "highlights"]) {
+  for (const id of ["fence", "hit-legs", "tracks", "trails", "aircraft", "highlights", "place"]) {
     map.addSource(id, { type: "geojson", data: fc([]) });
   }
   map.addLayer({ id: "fence-fill", type: "fill", source: "fence", paint: { "fill-color": FENCE, "fill-opacity": 0.08 } });
@@ -109,6 +110,33 @@ function addOverlays(map: MlMap): void {
     source: "trails",
     layout: { "line-join": "round", "line-cap": "round" },
     paint: { "line-color": "#64748b", "line-width": 1.2, "line-opacity": 0.55 },
+  });
+  // The selected place (place card): its outline plus a pin at its centroid.
+  map.addLayer({
+    id: "place-fill",
+    type: "fill",
+    source: "place",
+    filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+    paint: { "fill-color": PIN, "fill-opacity": 0.15 },
+  });
+  map.addLayer({
+    id: "place-line",
+    type: "line",
+    source: "place",
+    filter: ["!=", ["get", "pin"], true],
+    paint: { "line-color": PIN, "line-width": 2.5 },
+  });
+  map.addLayer({
+    id: "place-pin",
+    type: "circle",
+    source: "place",
+    filter: ["==", ["get", "pin"], true],
+    paint: {
+      "circle-radius": 7,
+      "circle-color": PIN,
+      "circle-stroke-color": "#ffffff",
+      "circle-stroke-width": 2.5,
+    },
   });
   map.addLayer({
     id: "highlights",
@@ -169,6 +197,9 @@ function addOverlays(map: MlMap): void {
   });
 }
 
+/** Infrastructure layers a click can open a place card from (labels excluded: they overlap). */
+const CLICKABLE_INFRA = INFRA_LAYERS.flatMap(infraLayerIds).filter((id) => !id.endsWith("-label"));
+
 function fenceGeometry(fence: Fence | undefined): Feature[] {
   return fence ? [feat(fence)] : [];
 }
@@ -198,6 +229,12 @@ function drawStatic(map: MlMap, s: State, prev: State | null): void {
   if (!prev || prev.highlights !== s.highlights) {
     src("highlights").setData(
       fc(s.highlights.map((h) => feat({ type: "Point", coordinates: h.centroid }, { id: h.id, name: h.name }))),
+    );
+  }
+  if (!prev || prev.place !== s.place) {
+    const p = s.place;
+    src("place").setData(
+      fc(p ? [feat(p.geometry, { id: p.id }), feat({ type: "Point", coordinates: p.centroid }, { id: p.id, pin: true })] : []),
     );
   }
   if (!prev || prev.layers !== s.layers) {
@@ -348,14 +385,23 @@ export function MapView({ playback }: { playback: Playback }) {
         if (f && f.geometry.type === "Polygon") void runGeofence(f.geometry as Fence);
       });
 
-      for (const layer of ["aircraft", "hit-legs"]) {
+      for (const layer of ["aircraft", "hit-legs", ...CLICKABLE_INFRA]) {
         map.on("mouseenter", layer, () => (map.getCanvas().style.cursor = "pointer"));
         map.on("mouseleave", layer, () => (map.getCanvas().style.cursor = ""));
       }
       map.on("click", (e: MapMouseEvent) => {
         if (store.get().drawing) return;
         const [top] = map.queryRenderedFeatures(e.point, { layers: ["aircraft", "hit-legs"] });
-        if (!top) return;
+        if (!top) {
+          // Infrastructure tiles carry the OSM identity (@type/@id); the source-layer is the category.
+          const [infra] = map.queryRenderedFeatures(e.point, { layers: CLICKABLE_INFRA });
+          const osmType = infra?.properties["@type"];
+          const osmId = infra?.properties["@id"];
+          if (infra?.sourceLayer && typeof osmType === "string" && typeof osmId === "number") {
+            void selectPlace({ layer: infra.sourceLayer as Layer, osmType, osmId });
+          }
+          return;
+        }
         const icao24 = top.properties.icao24 as string;
         if (top.layer.id === "hit-legs") {
           const hit = store.get().fence?.hits.find((h) => hitKey(h) === top.properties.key);

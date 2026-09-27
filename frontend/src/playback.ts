@@ -3,6 +3,7 @@ import aoi from "../../data/aoi.json";
 import { api } from "./api";
 import { ReplayBuffer, chunksAround } from "./replay";
 import type { Store } from "./store";
+import type { BBox } from "./types";
 
 export const CHUNK_S = 900; // one /replay request = 15 min
 export const STEP_S = 10; // bucket width
@@ -16,7 +17,9 @@ const KEEP_AHEAD_S = 3600;
 const PAD_DEG = 0.3; // replay aircraft slightly beyond the AOI so they fly in, not pop in
 
 const [x0, y0, x1, y1] = aoi.bbox;
-export const REPLAY_BBOX = [x0 - PAD_DEG, y0 - PAD_DEG, x1 + PAD_DEG, y1 + PAD_DEG].map((v) => v.toFixed(4)).join(",");
+/** Where replay shows aircraft: the AOI plus a margin. */
+export const REPLAY_BOUNDS: BBox = [x0 - PAD_DEG, y0 - PAD_DEG, x1 + PAD_DEG, y1 + PAD_DEG];
+export const REPLAY_BBOX = REPLAY_BOUNDS.map((v) => v.toFixed(4)).join(",");
 
 export class Playback {
   readonly buffer = new ReplayBuffer();

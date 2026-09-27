@@ -266,6 +266,136 @@ test("side panel width: drag, keyboard, reset, remembered", async ({ page }) => 
   await page.screenshot({ path: `${OUT}/splitter.png` });
 });
 
+const state = (page: Page) => page.evaluate(() => window.__aperture!.store.get());
+
+test("skip buttons and keyboard shortcuts", async ({ page, offOrigin }) => {
+  await openApp(page);
+  const rewind = page.getByTestId("rewind");
+  const forward = page.getByTestId("forward");
+  const { t: t0, day } = await state(page);
+
+  // One click = 5 units of the selected multiplier; the tooltip shows the jump in seconds.
+  await expect(forward).toHaveAttribute("title", "+300 sec"); // 60x default
+  await page.getByRole("group", { name: "Playback speed" }).getByRole("button", { name: "10×" }).click();
+  await expect(forward).toHaveAttribute("title", "+50 sec");
+  await expect(rewind).toHaveAttribute("title", "-50 sec");
+  await forward.click();
+  expect((await state(page)).t).toBe(t0 + 50);
+  await rewind.click();
+  await rewind.click();
+  expect(await state(page)).toMatchObject({ t: t0 - 50, playing: false });
+
+  // Skipping keeps playing.
+  await page.getByTestId("play").click();
+  await forward.click();
+  expect((await state(page)).playing).toBe(true);
+  await page.getByTestId("play").click();
+
+  // Clamped at the start of the day; the button disables there.
+  await page.evaluate((t) => window.__aperture!.store.seek(t), day[0] + 20);
+  await rewind.click();
+  expect((await state(page)).t).toBe(day[0]);
+  await expect(rewind).toBeDisabled();
+
+  // Keyboard: arrows skip and Space toggles, even with the map or a button focused.
+  await page.evaluate((t) => window.__aperture!.store.seek(t), t0);
+  await page.locator(".maplibregl-canvas").click({ position: { x: 5, y: 300 } });
+  const center = await page.evaluate(() => window.__aperture!.map.getCenter().toArray());
+  await page.keyboard.press("ArrowRight");
+  expect((await state(page)).t).toBe(t0 + 50);
+  expect(await page.evaluate(() => window.__aperture!.map.getCenter().toArray())).toEqual(center); // no pan
+  await page.keyboard.press("ArrowLeft");
+  expect((await state(page)).t).toBe(t0);
+  await page.getByTestId("play").focus();
+  await page.keyboard.press(" ");
+  expect((await state(page)).playing).toBe(true); // toggled once, not twice
+  await page.keyboard.press(" ");
+  expect((await state(page)).playing).toBe(false);
+
+  // "/" focuses search; typing there never triggers shortcuts.
+  const t1 = (await state(page)).t;
+  await page.keyboard.press("/");
+  const input = page.getByRole("combobox", { name: "Search flights and places" });
+  await expect(input).toBeFocused();
+  await page.keyboard.type("ab ");
+  await page.keyboard.press("ArrowLeft");
+  expect(await state(page)).toMatchObject({ t: t1, playing: false });
+  await expect(input).toHaveValue("ab ");
+  expect(offOrigin).toEqual([]);
+});
+
+test("search: places open a card and geofence, flights open their track", async ({ page, offOrigin }) => {
+  await openApp(page);
+  const input = page.getByRole("combobox", { name: "Search flights and places" });
+  const results = page.getByTestId("search-results");
+
+  // (Flights come first: an airport ops vehicle's owner is "DCA-RONALD REAGAN INTERNATIONAL AIRPORT".)
+  await input.fill("Reagan National");
+  await expect(results.locator(".result-group")).toContainText(["Flights", "Airports"]);
+  await results.getByRole("option", { name: /Ronald Reagan Washington National/ }).first().click();
+  const card = page.getByTestId("place-card");
+  await expect(card).toContainText("ICAO KDCA");
+  await expect(results).toBeHidden();
+  await waitIdle(page);
+  await expect.poll(() => rendered(page, ["place-line", "place-pin"])).toBeGreaterThan(0);
+
+  // Geofence a 2 km buffer around it from the card.
+  await page.getByTestId("place-buffer").fill("2");
+  await page.getByTestId("place-geofence").click();
+  await expect(page.getByTestId("fence-summary")).toContainText("2 km around Ronald Reagan Washington National");
+  expect(await page.getByTestId("hits").locator("li").count()).toBeGreaterThan(5);
+
+  // Category chips filter the results; arrow keys move the selection.
+  const groups = () => results.locator(".result-group").allTextContents();
+  await input.fill("Andrews");
+  await expect.poll(groups).toEqual(expect.arrayContaining(["Airports", "Military"]));
+  const refetched = page.waitForResponse((r) => r.url().includes("/api/search?") && !r.url().includes("airports"));
+  await page.getByRole("button", { name: "Airports", pressed: true }).click();
+  await refetched;
+  expect(await groups()).not.toContain("Airports");
+  expect(await groups()).toContain("Military");
+  await input.press("ArrowDown");
+  await expect(results.getByRole("option").nth(1)).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("button", { name: "Airports", pressed: false }).click();
+
+  // A flight: aircraft card + track (the place card closes), playhead where the aircraft is on the map.
+  await input.fill("N101HQ");
+  await expect(results.locator(".result-group").first()).toHaveText("Flights");
+  await expect(results.getByRole("option").first()).toContainText(/legs? · from/);
+  await input.press("Enter");
+  const aircraft = page.getByTestId("aircraft-card");
+  await expect(aircraft).toContainText("a00929");
+  await expect(card).toBeHidden();
+  await expect(aircraft).not.toContainText("Not broadcasting", { timeout: 15_000 });
+  await expect.poll(() => rendered(page, ["tracks"])).toBeGreaterThan(0);
+  await page.screenshot({ path: `${OUT}/search.png` });
+  expect(offOrigin).toEqual([]);
+});
+
+test("clicking infrastructure on the map opens its place card", async ({ page, offOrigin }) => {
+  await openApp(page);
+  await page.evaluate((c) => window.__aperture!.map.jumpTo({ center: c, zoom: 13 }), DCA);
+  await waitIdle(page);
+  // A pixel on the airport polygon with no aircraft on top of it.
+  const target = await page.evaluate(() => {
+    const m = window.__aperture!.map;
+    const { width, height } = m.getCanvas().getBoundingClientRect();
+    for (let dy = -60; dy <= 60; dy += 12) {
+      for (let dx = -60; dx <= 60; dx += 12) {
+        const p: [number, number] = [width / 2 + dx, height / 2 + dy];
+        const airport = m.queryRenderedFeatures(p, { layers: ["infra-airports-fill"] });
+        const clutter = m.queryRenderedFeatures(p, { layers: ["aircraft", "hit-legs"] });
+        if (airport.some((f) => f.properties.name?.includes("Reagan")) && !clutter.length) return p;
+      }
+    }
+    return null;
+  });
+  expect(target).not.toBeNull();
+  await page.locator(".maplibregl-canvas").click({ position: { x: target![0], y: target![1] } });
+  await expect(page.getByTestId("place-card")).toContainText("Ronald Reagan Washington National");
+  expect(offOrigin).toEqual([]);
+});
+
 test("MCP endpoint is reachable through the edge", async ({ request }) => {
   const r = await request.post("/mcp", {
     headers: { accept: "application/json, text/event-stream", "content-type": "application/json" },
@@ -280,7 +410,10 @@ declare global {
   interface Window {
     __aperture?: {
       map: import("maplibre-gl").Map;
-      store: { get(): { t: number; selectedHit: string | null } };
+      store: {
+        get(): { t: number; day: [number, number]; playing: boolean; selectedHit: string | null };
+        seek(t: number): void;
+      };
     };
   }
 }

@@ -14,6 +14,7 @@ from . import agent, queries
 from .db import make_engine
 
 LAYERS = Literal["airports", "ports", "government", "military"]
+SEARCH_GROUP = Literal["flights", "airports", "ports", "government", "military"]
 
 
 @asynccontextmanager
@@ -81,6 +82,18 @@ async def entities(
     return {"q": q, "results": await queries.search_entities(c, q, kind, layer, limit)}
 
 
+@app.get("/search")
+async def search(
+    c: Conn,
+    q: Annotated[str, Query(min_length=1, max_length=100)],
+    groups: Annotated[list[SEARCH_GROUP] | None, Query()] = None,
+    per_group: Annotated[int, Query(ge=1, le=20)] = 6,
+) -> dict:
+    """The UI's grouped search (the `/entities` contract is shared with the agent tools)."""
+    wanted = [g for g in queries.SEARCH_GROUPS if groups is None or g in groups]
+    return {"q": q, "groups": await queries.search_grouped(c, q, wanted, per_group)}
+
+
 @app.get("/aircraft/flags")
 async def aircraft_flags(c: Conn) -> dict:
     return await queries.aircraft_flags(c)
@@ -94,6 +107,13 @@ async def aircraft(c: Conn, icao24: str) -> dict:
 @app.get("/entities/feature/{feature_id}")
 async def feature(c: Conn, feature_id: int) -> dict:
     return await queries.get_feature(c, feature_id)
+
+
+@app.get("/entities/feature/osm/{layer}/{osm_type}/{osm_id}")
+async def feature_by_osm(
+    c: Conn, layer: LAYERS, osm_type: Literal["node", "way", "relation"], osm_id: int
+) -> dict:
+    return await queries.get_feature_by_osm(c, layer, osm_type, osm_id)
 
 
 @app.get("/tracks/{icao24}")

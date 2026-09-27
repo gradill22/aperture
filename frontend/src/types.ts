@@ -1,5 +1,5 @@
 // Shapes returned by the backend (backend/aperture_api/queries.py, tools.py).
-import type { LineString, MultiPolygon, Polygon } from "geojson";
+import type { Geometry, LineString, MultiPolygon, Polygon } from "geojson";
 
 export type Tz = "UTC" | "ET";
 export type Layer = "airports" | "ports" | "government" | "military";
@@ -71,6 +71,26 @@ export interface FeatureSummary {
   icao: string | null;
   iata: string | null;
   centroid: [number, number];
+}
+
+export interface FeatureDetail extends FeatureSummary {
+  tags: Record<string, string>;
+  bbox: BBox;
+  area_m2: number;
+  geometry: Geometry;
+}
+
+/** A search hit in the "flights" group: an aircraft with its leg count. */
+export interface FlightResult extends AircraftSummary {
+  n_legs: number;
+  first_seen: string | null;
+}
+
+export type SearchGroup = "flights" | Layer;
+
+export interface SearchResponse {
+  q: string;
+  groups: { flights?: FlightResult[] } & Partial<Record<Layer, FeatureSummary[]>>;
 }
 
 export interface TrackLeg {

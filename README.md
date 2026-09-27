@@ -11,7 +11,12 @@ data snapshot, build the dependency images). After that, no running component ca
 internet, and each phase gate proves it with egress probes that must fail.
 
 - Map: MapLibre with a Protomaps basemap and infrastructure overlays, aircraft tracks, a time
-  scrubber/replay, and a UTC/ET toggle.
+  scrubber/replay with rewind/fast-forward (5 units of the speed multiplier per click), and a
+  UTC/ET toggle. Keys: ←/→ skip, Space plays/pauses, / focuses search.
+- Search: typeahead over flights (hex, registration, callsign, type) and airports, ports,
+  government and military sites, with category chips. A place opens a card with a one-click
+  buffer geofence (clicking infrastructure on the map opens the same card); a flight opens its
+  card and track and jumps to when it is on the map.
 - Geofences: draw a polygon or buffer a feature to get entry/exit times for every aircraft; export
   findings with provenance.
 - Chat: `qwen/qwen3.5-9b` in LM Studio, tool calling over `search_entities`, `get_entity_track`
@@ -148,7 +153,7 @@ failure. Evidence is written to `.verify/`.
 | `phase0` | Snapshot artifacts match `MANIFEST.json` (sha256, sizes, counts); network-import lint |
 | `phase1` | DB, loader and API up on the internal network; egress blocked; API answers match golden JSON |
 | `phase2` | Agent and MCP answers checked against independent SQL ground truth (geofence and track questions), through the relay |
-| `phase3` | Edge audit, Playwright e2e (map, geofence, replay, chat, Markdown, resizable panel), no off-origin requests |
+| `phase3` | Edge audit, Playwright e2e (map, geofence, replay and skip, keyboard shortcuts, search, place cards, chat, Markdown, resizable panel), no off-origin requests |
 | `phase4` | Same app on minikube: NetworkPolicy egress probes, golden answers, chat through the relay |
 | `phase5` | Gitea and runner isolated and configured offline; pushes HEAD and requires a green run with egress and build evidence |
 

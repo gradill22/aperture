@@ -1,8 +1,17 @@
 import { selectHit } from "../actions";
-import { SPEEDS, hitKey, store, useStore } from "../store";
+import { SPEEDS, hitKey, skipSeconds, store, useStore } from "../store";
 import { formatClock, parseIso, zoneName } from "../time";
 
 const TICK_EVERY_S = 3 * 3600;
+
+/** Two triangles, pointing left (rewind) or right (fast-forward). */
+function SkipIcon({ forward = false }: { forward?: boolean }) {
+  return (
+    <svg viewBox="0 0 16 12" width="16" height="12" aria-hidden style={forward ? undefined : { transform: "scaleX(-1)" }}>
+      <path d="M0 0 L8 6 L0 12 Z M8 0 L16 6 L8 12 Z" fill="currentColor" />
+    </svg>
+  );
+}
 
 export function Timeline() {
   const day = useStore((s) => s.day);
@@ -15,6 +24,7 @@ export function Timeline() {
   const selectedHit = useStore((s) => s.selectedHit);
 
   if (!day) return <div className="timeline" />;
+  const step = skipSeconds(speed);
   const span = day[1] - day[0];
   const pct = (at: number) => `${(((at - day[0]) / span) * 100).toFixed(3)}%`;
   const hourTicks: number[] = [];
@@ -23,14 +33,37 @@ export function Timeline() {
   return (
     <div className="timeline" data-testid="timeline">
       <div className="timeline-controls">
-        <button
-          className="play"
-          data-testid="play"
-          aria-label={playing ? "Pause" : "Play"}
-          onClick={() => store.set({ playing: !playing && t < day[1] })}
-        >
-          {playing ? "❚❚" : "▶"}
-        </button>
+        <div className="transport" role="group" aria-label="Playback">
+          <button
+            className="skip"
+            data-testid="rewind"
+            aria-label={`Rewind ${step} seconds`}
+            title={`-${step} sec`}
+            disabled={t <= day[0]}
+            onClick={() => store.skip(-1)}
+          >
+            <SkipIcon />
+          </button>
+          <button
+            className="play"
+            data-testid="play"
+            aria-label={playing ? "Pause" : "Play"}
+            title="Play/pause (Space)"
+            onClick={() => store.set({ playing: !playing && t < day[1] })}
+          >
+            {playing ? "❚❚" : "▶"}
+          </button>
+          <button
+            className="skip"
+            data-testid="forward"
+            aria-label={`Fast-forward ${step} seconds`}
+            title={`+${step} sec`}
+            disabled={t >= day[1]}
+            onClick={() => store.skip(1)}
+          >
+            <SkipIcon forward />
+          </button>
+        </div>
         <div className="speeds" role="group" aria-label="Playback speed">
           {SPEEDS.map((v) => (
             <button key={v} className={v === speed ? "on" : ""} onClick={() => store.set({ speed: v })}>

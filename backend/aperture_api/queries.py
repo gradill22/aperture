@@ -183,6 +183,35 @@ async def search_entities(
     return results[:limit] if kind else results
 
 
+SEARCH_GROUPS = ("flights", "airports", "ports", "government", "military")
+
+
+async def search_grouped(
+    conn: AsyncConnection, q: str, groups: list[str], per_group: int
+) -> dict[str, list[dict]]:
+    """The map's search box: results per category. Flights are aircraft (matched on hex,
+    registration, callsign or type), each with its number of legs and first leg start."""
+    out: dict[str, list[dict]] = {}
+    for g in groups:
+        if g == "flights":
+            out[g] = await search_aircraft(conn, q, per_group)
+        else:
+            out[g] = await search_features(conn, q, per_group, g)
+    if out.get("flights"):
+        f = models.flight
+        legs = await conn.execute(
+            select(f.c.icao24, func.count().label("n"), func.min(f.c.start_ts).label("first"))
+            .where(f.c.icao24.in_([a["icao24"] for a in out["flights"]]))
+            .group_by(f.c.icao24)
+        )
+        by_icao = {r.icao24: r for r in legs}
+        for a in out["flights"]:
+            r = by_icao.get(a["icao24"])
+            a["n_legs"] = r.n if r else 0
+            a["first_seen"] = iso(r.first) if r else None
+    return out
+
+
 async def get_aircraft(conn: AsyncConnection, icao24: str) -> dict:
     a, f = models.aircraft, models.flight
     r = (await conn.execute(select(a).where(a.c.icao24 == icao24.lower()))).first()
@@ -226,6 +255,19 @@ async def aircraft_flags(conn: AsyncConnection) -> dict[str, list[str]]:
 
 
 async def get_feature(conn: AsyncConnection, feature_id: int) -> dict:
+    return await _feature_detail(
+        conn, models.osm_feature.c.id == feature_id, f"feature {feature_id}"
+    )
+
+
+async def get_feature_by_osm(conn: AsyncConnection, layer: str, osm_type: str, osm_id: int) -> dict:
+    """The feature a map click hit: vector tiles carry the OSM identity (@type/@id), not our id."""
+    o = models.osm_feature
+    where = (o.c.layer == layer) & (o.c.osm_type == osm_type) & (o.c.osm_id == osm_id)
+    return await _feature_detail(conn, where, f"{layer} {osm_type}/{osm_id}")
+
+
+async def _feature_detail(conn: AsyncConnection, where, what: str) -> dict:
     o = models.osm_feature
     surface = func.ST_PointOnSurface(o.c.geom)
     stmt = select(
@@ -236,10 +278,10 @@ async def get_feature(conn: AsyncConnection, feature_id: int) -> dict:
         func.ST_XMin(o.c.geom).label("x0"), func.ST_YMin(o.c.geom).label("y0"),
         func.ST_XMax(o.c.geom).label("x1"), func.ST_YMax(o.c.geom).label("y1"),
         func.ST_Area(cast(o.c.geom, Geography)).label("area_m2"),
-    ).where(o.c.id == feature_id)  # fmt: skip
+    ).where(where)  # fmt: skip
     r = (await conn.execute(stmt)).first()
     if r is None:
-        raise NotFound(f"feature {feature_id}")
+        raise NotFound(what)
     return _feature_summary(r) | {
         "tags": r.tags,
         "bbox": [rnd(r.x0), rnd(r.y0), rnd(r.x1), rnd(r.y1)],

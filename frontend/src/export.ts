@@ -1,12 +1,14 @@
 // Markdown finding for a flagged geofence pass. Generated entirely in the browser.
 import { formatDateTime, formatDuration, parseIso } from "./time";
+import type { FenceAround } from "./store";
 import type { AircraftDetail, Fence, GeofenceHit, Provenance, Tz } from "./types";
 
 export interface FindingInput {
   hit: GeofenceHit;
   aircraft: AircraftDetail | null;
   fence: Fence;
-  fenceSource: "drawn" | "chat";
+  fenceSource: "drawn" | "chat" | "place";
+  fenceAround?: FenceAround;
   window: [number, number];
   note: string;
   tz: Tz;
@@ -24,6 +26,17 @@ const orDash = (v: string | number | null | undefined) => (v === null || v === u
 function when(iso: string, tz: Tz): string {
   const t = parseIso(iso);
   return tz === "UTC" ? formatDateTime(t, "UTC") : `${formatDateTime(t, "ET")} (${formatDateTime(t, "UTC")})`;
+}
+
+export const formatKm = (m: number): string =>
+  `${(m / 1000).toLocaleString("en-US", { maximumFractionDigits: 2 })} km`;
+
+function fenceSourceText(f: FindingInput): string {
+  if (f.fenceSource === "place" && f.fenceAround) {
+    const a = f.fenceAround;
+    return `${formatKm(a.buffer_m)} buffer around ${a.name} (OSM ${a.osm})`;
+  }
+  return f.fenceSource === "drawn" ? "drawn on the map" : "created by the chat assistant";
 }
 
 export function findingFilename(f: FindingInput): string {
@@ -61,7 +74,7 @@ export function findingMarkdown(f: FindingInput): string {
   lines.push(
     "## Geofence",
     "",
-    `- **Source:** ${f.fenceSource === "drawn" ? "drawn on the map" : "created by the chat assistant"}`,
+    `- **Source:** ${fenceSourceText(f)}`,
     `- **Search window:** ${when(new Date(f.window[0] * 1000).toISOString(), tz)} → ${when(new Date(f.window[1] * 1000).toISOString(), tz)}`,
     `- **Pass:** leg ${hit.leg} of this aircraft's day`,
     "",

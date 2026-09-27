@@ -1,11 +1,14 @@
-import { type CSSProperties, useCallback, useEffect, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { init } from "./actions";
 import { AircraftCard } from "./components/AircraftCard";
 import { ChatPanel } from "./components/ChatPanel";
 import { GeofencePanel } from "./components/GeofencePanel";
 import { MapView } from "./components/MapView";
+import { PlaceCard } from "./components/PlaceCard";
+import { Search } from "./components/Search";
 import { Splitter } from "./components/Splitter";
 import { Timeline } from "./components/Timeline";
+import { installShortcuts } from "./keys";
 import { clampWidth, loadWidth, saveWidth } from "./layout";
 import { Playback } from "./playback";
 import { LAYERS, store, useStore } from "./store";
@@ -98,11 +101,14 @@ export function App() {
   const tab = useStore((s) => s.tab);
   const nHits = useStore((s) => s.fence?.hits.length);
   const [asideWidth, setAsideWidth] = useAsideWidth();
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void init();
     return playback.start();
   }, [playback]);
+
+  useEffect(() => installShortcuts(store, () => searchRef.current?.focus()), []);
 
   return (
     <div className="app">
@@ -110,8 +116,12 @@ export function App() {
       <main style={{ "--aside-w": `${asideWidth}px` } as CSSProperties}>
         <div className="map-wrap">
           <MapView playback={playback} />
-          <LayerToggles />
+          <div className="map-top-left">
+            <Search inputRef={searchRef} />
+            <LayerToggles />
+          </div>
           <AircraftCard playback={playback} />
+          <PlaceCard />
         </div>
         <Splitter width={asideWidth} onChange={setAsideWidth} />
         <aside id="side-panel">

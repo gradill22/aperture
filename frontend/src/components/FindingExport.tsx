@@ -27,6 +27,7 @@ export function FindingExport({ hit }: { hit: GeofenceHit }) {
       aircraft: detail,
       fence: fence.fence,
       fenceSource: fence.source,
+      fenceAround: fence.around,
       window: [fence.start, fence.end],
       note,
       tz,

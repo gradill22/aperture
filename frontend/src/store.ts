@@ -7,6 +7,7 @@ import type {
   AircraftFlags,
   BBox,
   ChatMessage,
+  FeatureDetail,
   Fence,
   GeofenceHit,
   Layer,
@@ -16,6 +17,8 @@ import type {
 } from "./types";
 
 export const SPEEDS = [1, 10, 60, 300] as const;
+/** The skip buttons jump this many units, where a unit is one second of replay at 1× (5 s at 1×, 50 s at 10×). */
+export const SKIP_UNITS = 5;
 export const LAYERS: Layer[] = ["airports", "ports", "government", "military"];
 
 export interface ShownTrack {
@@ -24,9 +27,17 @@ export interface ShownTrack {
   legs: TrackLeg[];
 }
 
+/** The feature a place-card geofence was buffered around. */
+export interface FenceAround {
+  name: string;
+  osm: string;
+  buffer_m: number;
+}
+
 export interface FenceState {
   fence: Fence;
-  source: "drawn" | "chat";
+  source: "drawn" | "chat" | "place";
+  around?: FenceAround;
   start: number;
   end: number;
   hits: GeofenceHit[];
@@ -60,6 +71,8 @@ export interface State {
   selected: string | null;
   selectedDetail: AircraftDetail | null;
   selectedTrack: TrackLeg[] | null;
+  /** Selected infrastructure feature (search result or map click). Exclusive with `selected`. */
+  place: FeatureDetail | null;
   tab: "chat" | "geofence";
   tracks: ShownTrack[];
   highlights: Highlight[];
@@ -88,6 +101,7 @@ const initial: State = {
   selected: null,
   selectedDetail: null,
   selectedTrack: null,
+  place: null,
   tab: "chat",
   tracks: [],
   highlights: [],
@@ -127,6 +141,14 @@ export class Store {
     this.set({ t: Math.min(day[1], Math.max(day[0], t)) });
   }
 
+  /** Jump SKIP_UNITS units back (-1) or ahead (+1) at the current speed, keeping play/pause. */
+  skip(direction: -1 | 1): void {
+    const { day, t, speed } = this.state;
+    if (!day) return;
+    this.seek(t + direction * skipSeconds(speed));
+    if (this.state.t >= day[1] && this.state.playing) this.set({ playing: false });
+  }
+
   fit(bbox: BBox): void {
     this.set((s) => ({ fitRequest: { bbox, seq: (s.fitRequest?.seq ?? 0) + 1 } }));
   }
@@ -161,6 +183,8 @@ export class Store {
     }
   }
 }
+
+export const skipSeconds = (speed: number): number => SKIP_UNITS * speed;
 
 export const hitKey = (h: Pick<GeofenceHit, "icao24" | "leg">): string => `${h.icao24}:${h.leg}`;
 

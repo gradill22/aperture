@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Store } from "./store";
+import { SPEEDS, Store, skipSeconds } from "./store";
 import { parseIso } from "./time";
 import type { GeofenceHit, TrackLeg } from "./types";
 
@@ -22,6 +22,31 @@ describe("Store", () => {
     expect(s.get().t).toBe(day[0]);
     s.seek(day[1] + 100);
     expect(s.get().t).toBe(day[1]);
+  });
+
+  it("skips 5 units, where a unit is the speed multiplier in seconds", () => {
+    expect(SPEEDS.map(skipSeconds)).toEqual([5, 50, 300, 1500]);
+    const s = new Store({ day, t: day[0] + 3600, speed: 10 });
+    s.skip(1);
+    expect(s.get().t).toBe(day[0] + 3650);
+    s.skip(-1);
+    s.skip(-1);
+    expect(s.get().t).toBe(day[0] + 3550);
+    s.set({ speed: 300 });
+    s.skip(-1);
+    expect(s.get().t).toBe(day[0] + 2050);
+  });
+
+  it("keeps play/pause when skipping, clamps to the day, and stops at its end", () => {
+    const s = new Store({ day, t: day[0] + 2, speed: 1, playing: true });
+    s.skip(-1);
+    expect(s.get()).toMatchObject({ t: day[0], playing: true });
+    s.set({ playing: false });
+    s.skip(1);
+    expect(s.get()).toMatchObject({ t: day[0] + 5, playing: false });
+    s.set({ t: day[1] - 100, speed: 60, playing: true });
+    s.skip(1);
+    expect(s.get()).toMatchObject({ t: day[1], playing: false });
   });
 
   it("applies chat map actions", () => {
