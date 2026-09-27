@@ -178,6 +178,94 @@ test("chat replies apply map actions", async ({ page, request, offOrigin }) => {
   expect(offOrigin).toEqual([]);
 });
 
+test("chat renders Markdown and previews the draft", async ({ page, offOrigin }) => {
+  const reply = [
+    "**2 aircraft** passed [DCA](/provenance.json):",
+    "",
+    "| icao24 | min km |",
+    "|---|---:|",
+    "| a00929 | 1.2 |",
+    "",
+    "![plot](http://example.com/plot.png) <b>raw</b>",
+  ].join("\n");
+  await page.route("**/api/chat", (route) =>
+    route.fulfill({ json: { reply, map_actions: [], tool_calls: [] } }),
+  );
+  await openApp(page);
+  const input = page.getByTestId("chat-input");
+  const preview = page.getByTestId("chat-preview");
+
+  await input.fill("plain question");
+  await expect(preview).toHaveCount(0);
+  await input.fill("which of **these** used `a00929`?");
+  await expect(preview.locator("strong")).toHaveText("these");
+  await expect(preview.locator("code")).toHaveText("a00929");
+  await input.press("Enter");
+  await expect(preview).toHaveCount(0);
+
+  const user = page.locator(".msg.user").last();
+  await expect(user.locator("strong")).toHaveText("these");
+  const answer = page.locator(".msg.assistant").last();
+  await expect(answer.locator("strong")).toHaveText("2 aircraft");
+  await expect(answer.locator("table td").first()).toHaveText("a00929");
+  const link = answer.getByRole("link", { name: "DCA" });
+  await expect(link).toHaveAttribute("target", "_blank");
+  await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  // Images and raw HTML never become elements: the image URL is not fetched (offOrigin stays empty).
+  await expect(answer.locator("img, b")).toHaveCount(0);
+  await expect(answer.locator(".img-alt")).toHaveText("[plot]");
+  await page.screenshot({ path: `${OUT}/chat-markdown.png` });
+  expect(offOrigin).toEqual([]);
+});
+
+test("side panel width: drag, keyboard, reset, remembered", async ({ page }) => {
+  await openApp(page);
+  const splitter = page.getByTestId("splitter");
+  const aside = page.locator("aside");
+  const width = async () => Math.round((await aside.boundingBox())!.width);
+  const mapWidth = () => page.evaluate(() => window.__aperture!.map.getCanvas().clientWidth);
+  await expect(splitter).toHaveAttribute("aria-valuenow", "400");
+  expect(await width()).toBe(400);
+  const map0 = await mapWidth();
+
+  // Drag 200 px to the left: panel wider, map narrower (MapLibre follows its container).
+  const box = (await splitter.boundingBox())!;
+  const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x - 100, y, { steps: 5 });
+  await page.mouse.move(x - 200, y, { steps: 5 });
+  await page.mouse.up();
+  expect(await width()).toBe(600);
+  await expect(splitter).toHaveAttribute("aria-valuenow", "600");
+  await expect.poll(mapWidth).toBe(map0 - 200);
+
+  // Dragging far past the limit clamps: the map keeps 360 px, the panel tops out at 900.
+  await page.mouse.move(x - 200, y);
+  await page.mouse.down();
+  await page.mouse.move(0, y, { steps: 5 });
+  await page.mouse.up();
+  expect(await width()).toBe(900);
+
+  await splitter.focus();
+  await page.keyboard.press("Home");
+  expect(await width()).toBe(300);
+  await page.keyboard.press("ArrowLeft");
+  expect(await width()).toBe(316);
+  await page.keyboard.press("Shift+ArrowLeft");
+  expect(await width()).toBe(380);
+  await page.keyboard.press("ArrowRight");
+  expect(await width()).toBe(364);
+
+  await page.reload();
+  await expect(page.getByTestId("map")).toHaveAttribute("data-map-loaded", "true");
+  expect(await width()).toBe(364);
+
+  await splitter.dblclick();
+  expect(await width()).toBe(400);
+  await page.screenshot({ path: `${OUT}/splitter.png` });
+});
+
 test("MCP endpoint is reachable through the edge", async ({ request }) => {
   const r = await request.post("/mcp", {
     headers: { accept: "application/json, text/event-stream", "content-type": "application/json" },

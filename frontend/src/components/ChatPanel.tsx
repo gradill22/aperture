@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { clearChat, sendChat, stopChat } from "../actions";
 import { useStore } from "../store";
 import type { ToolTrace } from "../types";
+import { Markdown, hasMarkdown } from "./Markdown";
 
 const EXAMPLES = [
   "Which aircraft passed within 2 km of Reagan National between 14:00 and 15:00 UTC?",
@@ -67,7 +68,9 @@ export function ChatPanel() {
         {chat.map((m, i) => (
           <div key={i} className={`msg ${m.role}${m.error ? " error" : ""}`}>
             {m.tools && <Tools tools={m.tools} />}
-            <div className="text">{m.content}</div>
+            <div className="text">
+              <Markdown text={m.content} />
+            </div>
           </div>
         ))}
         {pending && (
@@ -97,6 +100,12 @@ export function ChatPanel() {
             }
           }}
         />
+        {hasMarkdown(text) && (
+          <div className="preview" data-testid="chat-preview" aria-label="Markdown preview">
+            <span className="preview-label">Preview</span>
+            <Markdown text={text} />
+          </div>
+        )}
         <div className="composer-actions">
           <button type="button" onClick={clearChat} disabled={!chat.length && !pending}>
             Clear

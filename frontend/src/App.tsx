@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useState } from "react";
 import { init } from "./actions";
 import { AircraftCard } from "./components/AircraftCard";
 import { ChatPanel } from "./components/ChatPanel";
 import { GeofencePanel } from "./components/GeofencePanel";
 import { MapView } from "./components/MapView";
+import { Splitter } from "./components/Splitter";
 import { Timeline } from "./components/Timeline";
+import { clampWidth, loadWidth, saveWidth } from "./layout";
 import { Playback } from "./playback";
 import { LAYERS, store, useStore } from "./store";
 import { LAYER_COLORS } from "./style";
@@ -73,10 +75,29 @@ function Header() {
   );
 }
 
+/** The side panel's preferred width (persisted), fitted to the current viewport. */
+function useAsideWidth(): [number, (w: number) => void] {
+  const [preferred, setPreferred] = useState(loadWidth);
+  const [viewport, setViewport] = useState(() => window.innerWidth);
+  useEffect(() => {
+    const onResize = () => setViewport(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  const width = clampWidth(preferred, viewport);
+  const set = useCallback((w: number) => {
+    const next = clampWidth(w, window.innerWidth);
+    setPreferred(next);
+    saveWidth(next);
+  }, []);
+  return [width, set];
+}
+
 export function App() {
   const [playback] = useState(() => new Playback(store));
   const tab = useStore((s) => s.tab);
   const nHits = useStore((s) => s.fence?.hits.length);
+  const [asideWidth, setAsideWidth] = useAsideWidth();
 
   useEffect(() => {
     void init();
@@ -86,13 +107,14 @@ export function App() {
   return (
     <div className="app">
       <Header />
-      <main>
+      <main style={{ "--aside-w": `${asideWidth}px` } as CSSProperties}>
         <div className="map-wrap">
           <MapView playback={playback} />
           <LayerToggles />
           <AircraftCard playback={playback} />
         </div>
-        <aside>
+        <Splitter width={asideWidth} onChange={setAsideWidth} />
+        <aside id="side-panel">
           <nav className="tabs" role="tablist">
             <button role="tab" aria-selected={tab === "chat"} onClick={() => store.set({ tab: "chat" })}>
               Chat

@@ -16,3 +16,4 @@ data/snapshot/osm/
 data/tiles/*.pmtiles
 data/tiles/fonts/
 data/tiles/sprites/
+e2e/test-results/
