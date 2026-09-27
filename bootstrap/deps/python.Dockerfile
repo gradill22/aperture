@@ -12,6 +12,7 @@ COPY pyproject.toml uv.lock ./
 COPY data/pyproject.toml data/
 COPY db/loader/pyproject.toml db/loader/
 COPY backend/pyproject.toml backend/
+COPY mcp-server/pyproject.toml mcp-server/
 RUN uv sync --frozen --no-dev --no-install-workspace --all-packages \
     && rm -rf /root/.cache /src
 ARG LOCK_SHA256

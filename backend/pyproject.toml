@@ -9,6 +9,8 @@ dependencies = [
     "sqlalchemy[asyncio]",
     "geoalchemy2",
     "asyncpg",
+    "httpx",
+    "tzdata",
 ]
 
 [build-system]

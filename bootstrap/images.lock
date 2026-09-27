@@ -11,4 +11,6 @@ timescale/timescaledb-ha@sha256:3e3440ab4c2aa585e743b1d8466cda9bbf18b6c598ec7806
 python@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d              # python:3.14-slim
 ghcr.io/astral-sh/uv@sha256:04d046b13e60d6bcec73cbc5e1cad25d680dea90c8573340950a0ac2d1aef424  # uv 0.12.19
 curlimages/curl@sha256:58adaa4e8dca9c988bae2aba4ab3434a0bb2da16bbe3f92dec39ec7785166777      # probe
-aperture/py-deps:latest  local sha256:17dc61c0be400532e62dcc44a8c549d02c668cecd347136e5b1b21f63b920f8f  # bootstrap/build_deps.py, lock 0fc3a74c43cb
+aperture/py-deps:latest  local sha256:ada1159fffc03bff658955f6f25b7e36de92a1574af8515ca7eff2e52619d197  # bootstrap/build_deps.py, lock d6e3a19adbef (Phase 2: + mcp, httpx, tzdata)
+#
+# Phase 2: no new third-party images. llm-relay is stdlib Python on the pinned python:3.14-slim.

@@ -7,6 +7,9 @@
 !db/loader/aperture_loader/
 !backend/pyproject.toml
 !backend/aperture_api/
+!mcp-server/pyproject.toml
+!mcp-server/aperture_mcp/
+!relay/llm_relay.py
 !data/snapshot/adsb/
 !data/snapshot/osm/
 **/__pycache__

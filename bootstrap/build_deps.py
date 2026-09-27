@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PY_INPUTS = [
     "pyproject.toml", "uv.lock", "data/pyproject.toml", "db/loader/pyproject.toml",
-    "backend/pyproject.toml",
+    "backend/pyproject.toml", "mcp-server/pyproject.toml",
 ]  # fmt: skip
 
 

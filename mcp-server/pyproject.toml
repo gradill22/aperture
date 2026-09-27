@@ -1,0 +1,16 @@
+[project]
+name = "aperture-mcp"
+version = "0.1.0"
+description = "FastMCP adapter over the backend's tool registry (stdio + streamable HTTP)"
+requires-python = ">=3.14"
+dependencies = ["aperture-api", "mcp"]
+
+[project.scripts]
+aperture-mcp = "aperture_mcp.server:main"
+
+[tool.uv.sources]
+aperture-api = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

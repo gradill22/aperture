@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from pydantic import AwareDatetime, BaseModel, Field, model_validator
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from . import queries
+from . import agent, queries
 from .db import make_engine
 
 LAYERS = Literal["airports", "ports", "government", "military"]
@@ -20,7 +20,9 @@ LAYERS = Literal["airports", "ports", "government", "military"]
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.engine = make_engine()
     app.state.dataset = None
+    app.state.llm = agent.make_client()
     yield
+    await app.state.llm.aclose()
     await app.state.engine.dispose()
 
 
@@ -146,3 +148,26 @@ async def geofence(c: Conn, ds: Dataset, body: GeofenceRequest) -> dict:
         end=body.end or day1,
         include_geometry=body.include_geometry,
     )
+
+
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(max_length=8000)
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage] = Field(min_length=1, max_length=40)
+    tz: Literal["UTC", "ET"] = "UTC"
+
+
+@app.post("/chat")
+async def chat(request: Request, _: Dataset, body: ChatRequest) -> dict:
+    try:
+        return await agent.chat(
+            request.app.state.engine,
+            request.app.state.llm,
+            [m.model_dump() for m in body.messages],
+            body.tz,
+        )
+    except agent.LLMUnavailable as exc:
+        raise HTTPException(502, str(exc)) from None

@@ -3,7 +3,8 @@
     uv run python scripts/lint_network.py
 
 Networked code is confined to data/snapshot/ (one-time data fetch) and bootstrap/
-(image/dependency builds). Later phases add the backend's LM Studio client here.
+(image/dependency builds). The backend's LM Studio client (agent.py) talks only to LLM_BASE_URL,
+and tests use httpx/respx against mocked or in-network endpoints.
 """
 
 import ast
@@ -12,7 +13,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 NETWORK_MODULES = {"httpx", "requests", "urllib", "urllib3", "aiohttp", "socket", "http"}
-ALLOWED = ["data/snapshot/", "bootstrap/"]
+ALLOWED = [
+    "data/snapshot/",
+    "bootstrap/",
+    "backend/aperture_api/agent.py",
+    "backend/tests/",
+    "mcp-server/tests/",
+]
 SKIP_DIRS = {".venv", "node_modules", ".git", "__pycache__"}
 
 
