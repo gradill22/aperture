@@ -718,7 +718,8 @@ def ci_compose(*args: str) -> subprocess.CompletedProcess:
 def gitea_config_ok() -> bool:
     """The effective app.ini (the install page writes it) keeps every offline setting."""
     ini = configparser.ConfigParser(interpolation=None, strict=False)
-    ini.read_string(ci_compose("exec", "-T", "gitea", "cat", "/etc/gitea/app.ini").stdout)
+    app_ini = ci_compose("exec", "-T", "gitea", "cat", "/etc/gitea/app.ini").stdout
+    ini.read_string("[_top]\n" + app_ini)  # app.ini starts with section-less keys
     bad = {
         f"{s}.{k}": ini.get(s, k, fallback=None)
         for (s, k), want in GITEA_SETTINGS.items()

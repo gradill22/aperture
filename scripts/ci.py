@@ -85,7 +85,12 @@ def env_value(key: str) -> str:
 
 
 def runner_registered() -> bool:
-    return sh(["-v", f"{RUNNER_VOLUME}:/data:ro"], "test -s /data/.runner").returncode == 0
+    # Mounting a missing volume would create it outside Compose (no project labels): look first.
+    exists = subprocess.run(["docker", "volume", "inspect", RUNNER_VOLUME],
+                            capture_output=True, check=False).returncode == 0  # fmt: skip
+    return (
+        exists and sh(["-v", f"{RUNNER_VOLUME}:/data:ro"], "test -s /data/.runner").returncode == 0
+    )
 
 
 def up() -> bool:
