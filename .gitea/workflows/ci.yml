@@ -115,9 +115,12 @@ jobs:
     needs: [egress-check, lint, typecheck, test, web, helm]
     container:
       image: aperture/ci-python:latest
+      # No `:ro` on the named volume: act_runner 0.6.1 takes it as part of the target path
+      # (mounts at "/ci-data:ro"). The job only copies from it, and verify.py below checks every
+      # copied file against MANIFEST.json, so a modified seed fails the build either way.
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
-        - aperture-ci-data:/ci-data:ro
+        - aperture-ci-data:/ci-data
     steps:
       - run: ci-checkout
       - name: deps images match the lockfiles
