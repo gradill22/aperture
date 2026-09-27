@@ -5,3 +5,10 @@
 protomaps/go-pmtiles@sha256:06574f01f55a78f78f887bc7ebf729a5c093c0d6e17d9876300cfcb0758b59d3   # pmtiles v1.31.2
 indigoag/tippecanoe@sha256:62914726c0300e78bb2ca60fcce97d85995255caad5f10e78dc2e1bd59cec900    # tippecanoe v2.23.0
 aperture/osmium:1  local sha256:4f2ceb864b4d8cb1652862549ee7b7eb5e7f99ef23595c09db14051a022c97a0  # bootstrap/tools/osmium.Dockerfile, osmium 1.18.0
+#
+# Phase 1: database + Python runtime (pinned by digest in docker-compose.yml / Dockerfiles)
+timescale/timescaledb-ha@sha256:3e3440ab4c2aa585e743b1d8466cda9bbf18b6c598ec7806cf61e02fa5cd1d1a  # pg17.11, PostGIS 3.6.4, TimescaleDB 2.30.1
+python@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d              # python:3.14-slim
+ghcr.io/astral-sh/uv@sha256:04d046b13e60d6bcec73cbc5e1cad25d680dea90c8573340950a0ac2d1aef424  # uv 0.12.19
+curlimages/curl@sha256:58adaa4e8dca9c988bae2aba4ab3434a0bb2da16bbe3f92dec39ec7785166777      # probe
+aperture/py-deps:latest  local sha256:17dc61c0be400532e62dcc44a8c549d02c668cecd347136e5b1b21f63b920f8f  # bootstrap/build_deps.py, lock 0fc3a74c43cb

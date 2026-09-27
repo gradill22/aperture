@@ -1,0 +1,50 @@
+{
+ "q": "Reagan National",
+ "results": [
+  {
+   "centroid": [
+    -77.03969,
+    38.85129
+   ],
+   "feature_kind": "aeroway=aerodrome",
+   "iata": "DCA",
+   "icao": "KDCA",
+   "id": 246,
+   "kind": "feature",
+   "label": "Ronald Reagan Washington National Airport",
+   "layer": "airports",
+   "name": "Ronald Reagan Washington National Airport",
+   "osm": "relation/9313825"
+  },
+  {
+   "centroid": [
+    -77.03069,
+    38.89423
+   ],
+   "feature_kind": "office=government",
+   "iata": null,
+   "icao": null,
+   "id": 1479,
+   "kind": "feature",
+   "label": "Ronald Reagan Building and International Trade Center",
+   "layer": "government",
+   "name": "Ronald Reagan Building and International Trade Center",
+   "osm": "way/66418949"
+  },
+  {
+   "centroid": [
+    -77.04247,
+    38.84872
+   ],
+   "feature_kind": "aeroway=terminal",
+   "iata": null,
+   "icao": null,
+   "id": 68,
+   "kind": "feature",
+   "label": "Terminal A at DCA",
+   "layer": "airports",
+   "name": "Terminal A at DCA",
+   "osm": "node/3068522839"
+  }
+ ]
+}

@@ -2,17 +2,23 @@
 name = "aperture"
 version = "0.1.0"
 requires-python = ">=3.14"
-dependencies = ["aperture-data"]
+dependencies = ["aperture-data", "aperture-loader", "aperture-api"]
 
 [tool.uv.sources]
 aperture-data = { workspace = true }
+aperture-loader = { workspace = true }
+aperture-api = { workspace = true }
 
 [tool.uv.workspace]
-members = ["data"]
+members = ["data", "db/loader", "backend"]
 
 [dependency-groups]
-dev = ["ruff", "pytest"]
+dev = ["ruff", "pytest", "httpx"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py314"
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+filterwarnings = ["ignore:Using .httpx. with .starlette.testclient."]

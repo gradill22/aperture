@@ -1,0 +1,31 @@
+{
+ "q": "N101HQ",
+ "results": [
+  {
+   "callsigns": [
+    "RPA4452",
+    "RPA4456",
+    "RPA4589",
+    "RPA4607",
+    "RPA4693",
+    "RPA4700"
+   ],
+   "category": "A3",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "icao24": "a00929",
+   "id": "a00929",
+   "interesting": false,
+   "kind": "aircraft",
+   "label": "N101HQ",
+   "ladd": false,
+   "military": false,
+   "n_points": 5282,
+   "n_points_in_aoi": 1775,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N101HQ",
+   "type_code": "E75L",
+   "year": "2007"
+  }
+ ]
+}

@@ -1,0 +1,12 @@
+# Allowlist: build contexts see only what an image needs.
+*
+!pyproject.toml
+!uv.lock
+!data/pyproject.toml
+!db/loader/pyproject.toml
+!db/loader/aperture_loader/
+!backend/pyproject.toml
+!backend/aperture_api/
+!data/snapshot/adsb/
+!data/snapshot/osm/
+**/__pycache__

@@ -1,0 +1,1891 @@
+{
+ "end": "2026-09-24T15:00:00Z",
+ "fence": {
+  "coordinates": [
+   [
+    [
+     -77.07151,
+     38.848784
+    ],
+    [
+     -77.071448,
+     38.849043
+    ],
+    [
+     -77.071293,
+     38.849418
+    ],
+    [
+     -77.071212,
+     38.849947
+    ],
+    [
+     -77.070348,
+     38.852246
+    ],
+    [
+     -77.070329,
+     38.853024
+    ],
+    [
+     -77.069659,
+     38.85517
+    ],
+    [
+     -77.069667,
+     38.855171
+    ],
+    [
+     -77.069462,
+     38.855838
+    ],
+    [
+     -77.069451,
+     38.855836
+    ],
+    [
+     -77.069326,
+     38.856236
+    ],
+    [
+     -77.069364,
+     38.856532
+    ],
+    [
+     -77.069391,
+     38.857155
+    ],
+    [
+     -77.06874,
+     38.862061
+    ],
+    [
+     -77.068565,
+     38.862618
+    ],
+    [
+     -77.068539,
+     38.862716
+    ],
+    [
+     -77.068469,
+     38.862977
+    ],
+    [
+     -77.06807,
+     38.864234
+    ],
+    [
+     -77.068006,
+     38.86441
+    ],
+    [
+     -77.067302,
+     38.865636
+    ],
+    [
+     -77.067172,
+     38.866122
+    ],
+    [
+     -77.065615,
+     38.869122
+    ],
+    [
+     -77.065344,
+     38.869534
+    ],
+    [
+     -77.064995,
+     38.870062
+    ],
+    [
+     -77.063145,
+     38.872408
+    ],
+    [
+     -77.06286,
+     38.872714
+    ],
+    [
+     -77.062325,
+     38.873289
+    ],
+    [
+     -77.060392,
+     38.875103
+    ],
+    [
+     -77.059619,
+     38.875738
+    ],
+    [
+     -77.058293,
+     38.876744
+    ],
+    [
+     -77.058186,
+     38.876819
+    ],
+    [
+     -77.0549,
+     38.878736
+    ],
+    [
+     -77.051231,
+     38.880168
+    ],
+    [
+     -77.047295,
+     38.881069
+    ],
+    [
+     -77.046977,
+     38.881118
+    ],
+    [
+     -77.040958,
+     38.881422
+    ],
+    [
+     -77.040878,
+     38.881418
+    ],
+    [
+     -77.039907,
+     38.881293
+    ],
+    [
+     -77.035845,
+     38.881265
+    ],
+    [
+     -77.031422,
+     38.880545
+    ],
+    [
+     -77.031379,
+     38.880535
+    ],
+    [
+     -77.029465,
+     38.879992
+    ],
+    [
+     -77.0294,
+     38.879972
+    ],
+    [
+     -77.027111,
+     38.879114
+    ],
+    [
+     -77.027057,
+     38.879091
+    ],
+    [
+     -77.023849,
+     38.877427
+    ],
+    [
+     -77.023757,
+     38.877371
+    ],
+    [
+     -77.020182,
+     38.874613
+    ],
+    [
+     -77.017455,
+     38.871316
+    ],
+    [
+     -77.017439,
+     38.871291
+    ],
+    [
+     -77.017047,
+     38.870508
+    ],
+    [
+     -77.01638,
+     38.869899
+    ],
+    [
+     -77.014052,
+     38.866526
+    ],
+    [
+     -77.013507,
+     38.865486
+    ],
+    [
+     -77.013345,
+     38.865166
+    ],
+    [
+     -77.013094,
+     38.86466
+    ],
+    [
+     -77.012644,
+     38.863833
+    ],
+    [
+     -77.012631,
+     38.863809
+    ],
+    [
+     -77.012123,
+     38.862873
+    ],
+    [
+     -77.0119,
+     38.862484
+    ],
+    [
+     -77.011588,
+     38.861917
+    ],
+    [
+     -77.011535,
+     38.861815
+    ],
+    [
+     -77.01062,
+     38.859188
+    ],
+    [
+     -77.010564,
+     38.8592
+    ],
+    [
+     -77.010451,
+     38.858874
+    ],
+    [
+     -77.010422,
+     38.858767
+    ],
+    [
+     -77.010419,
+     38.858768
+    ],
+    [
+     -77.010344,
+     38.858511
+    ],
+    [
+     -77.010352,
+     38.858509
+    ],
+    [
+     -77.010237,
+     38.858088
+    ],
+    [
+     -77.010052,
+     38.857557
+    ],
+    [
+     -77.010044,
+     38.857514
+    ],
+    [
+     -77.010043,
+     38.857378
+    ],
+    [
+     -77.009942,
+     38.857007
+    ],
+    [
+     -77.008674,
+     38.854136
+    ],
+    [
+     -77.008048,
+     38.85085
+    ],
+    [
+     -77.008204,
+     38.847529
+    ],
+    [
+     -77.009138,
+     38.844287
+    ],
+    [
+     -77.010222,
+     38.842317
+    ],
+    [
+     -77.010333,
+     38.841835
+    ],
+    [
+     -77.010374,
+     38.841662
+    ],
+    [
+     -77.010471,
+     38.841265
+    ],
+    [
+     -77.010791,
+     38.840144
+    ],
+    [
+     -77.010907,
+     38.839793
+    ],
+    [
+     -77.011393,
+     38.838514
+    ],
+    [
+     -77.01148,
+     38.838312
+    ],
+    [
+     -77.011693,
+     38.837446
+    ],
+    [
+     -77.011833,
+     38.836993
+    ],
+    [
+     -77.012085,
+     38.836246
+    ],
+    [
+     -77.012149,
+     38.83607
+    ],
+    [
+     -77.012731,
+     38.834694
+    ],
+    [
+     -77.012742,
+     38.83467
+    ],
+    [
+     -77.013196,
+     38.833423
+    ],
+    [
+     -77.013218,
+     38.833382
+    ],
+    [
+     -77.014796,
+     38.83089
+    ],
+    [
+     -77.016845,
+     38.828618
+    ],
+    [
+     -77.016921,
+     38.828546
+    ],
+    [
+     -77.019553,
+     38.826438
+    ],
+    [
+     -77.022589,
+     38.824693
+    ],
+    [
+     -77.025947,
+     38.823359
+    ],
+    [
+     -77.026812,
+     38.823082
+    ],
+    [
+     -77.028652,
+     38.822564
+    ],
+    [
+     -77.029403,
+     38.82238
+    ],
+    [
+     -77.029996,
+     38.822272
+    ],
+    [
+     -77.029993,
+     38.822264
+    ],
+    [
+     -77.030547,
+     38.822137
+    ],
+    [
+     -77.031526,
+     38.82193
+    ],
+    [
+     -77.032153,
+     38.821809
+    ],
+    [
+     -77.037382,
+     38.821285
+    ],
+    [
+     -77.038973,
+     38.821269
+    ],
+    [
+     -77.040312,
+     38.821287
+    ],
+    [
+     -77.040897,
+     38.821307
+    ],
+    [
+     -77.040896,
+     38.821322
+    ],
+    [
+     -77.044321,
+     38.821592
+    ],
+    [
+     -77.045722,
+     38.821889
+    ],
+    [
+     -77.046981,
+     38.821989
+    ],
+    [
+     -77.048132,
+     38.822204
+    ],
+    [
+     -77.050448,
+     38.822739
+    ],
+    [
+     -77.050614,
+     38.822785
+    ],
+    [
+     -77.050847,
+     38.822874
+    ],
+    [
+     -77.0511,
+     38.822931
+    ],
+    [
+     -77.055696,
+     38.824408
+    ],
+    [
+     -77.056109,
+     38.824633
+    ],
+    [
+     -77.058892,
+     38.825601
+    ],
+    [
+     -77.062393,
+     38.827488
+    ],
+    [
+     -77.06539,
+     38.829846
+    ],
+    [
+     -77.066511,
+     38.831134
+    ],
+    [
+     -77.066551,
+     38.831177
+    ],
+    [
+     -77.06657,
+     38.831201
+    ],
+    [
+     -77.067783,
+     38.832594
+    ],
+    [
+     -77.068215,
+     38.833365
+    ],
+    [
+     -77.068777,
+     38.834105
+    ],
+    [
+     -77.068863,
+     38.834247
+    ],
+    [
+     -77.069801,
+     38.836044
+    ],
+    [
+     -77.070112,
+     38.836746
+    ],
+    [
+     -77.070404,
+     38.837449
+    ],
+    [
+     -77.070613,
+     38.837992
+    ],
+    [
+     -77.071109,
+     38.839517
+    ],
+    [
+     -77.0712,
+     38.839859
+    ],
+    [
+     -77.071433,
+     38.840876
+    ],
+    [
+     -77.071535,
+     38.841411
+    ],
+    [
+     -77.071671,
+     38.842263
+    ],
+    [
+     -77.071752,
+     38.842893
+    ],
+    [
+     -77.071858,
+     38.844169
+    ],
+    [
+     -77.071888,
+     38.844957
+    ],
+    [
+     -77.07151,
+     38.848784
+    ]
+   ]
+  ],
+  "type": "Polygon"
+ },
+ "hits": [
+  {
+   "callsign": "RPA4701",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 555,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:09:15.103061Z",
+   "icao24": "a0232a",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 950,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 135,
+   "on_ground": true,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N108HQ",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "AAL1218",
+   "description": "BOEING 737 MAX 8",
+   "duration_s": 1607,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:26:46.566598Z",
+   "icao24": "a382ca",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1175,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 241,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N325VM",
+   "type_code": "B38M"
+  },
+  {
+   "callsign": "AAL401",
+   "description": "BOEING 737 MAX 8",
+   "duration_s": 1318,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:21:58.269899Z",
+   "icao24": "a3a9ff",
+   "ladd": false,
+   "leg": 5,
+   "max_alt_ft": 1250,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 173,
+   "on_ground": true,
+   "owner_operator": "WILMINGTON TRUST CO TRUSTEE",
+   "pia": false,
+   "registration": "N335SN",
+   "type_code": "B38M"
+  },
+  {
+   "callsign": "JIA5092",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 869,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:14:28.555199Z",
+   "icao24": "a65b64",
+   "ladd": false,
+   "leg": 5,
+   "max_alt_ft": 1325,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 176,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N509AE",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "JIA5619",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 208,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:03:27.885301Z",
+   "icao24": "a67407",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1375,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 105,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N515AE",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "JIA5150",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 1030,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:17:09.864241Z",
+   "icao24": "a6e376",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 925,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 165,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N543EA",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "JIA5473",
+   "description": "BOMBARDIER Regional Jet CRJ-900",
+   "duration_s": 3600,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "a70bc9",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 800,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 230,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N553NN",
+   "type_code": "CRJ9"
+  },
+  {
+   "callsign": "JIA5079",
+   "description": "BOMBARDIER Regional Jet CRJ-900",
+   "duration_s": 1883,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:31:22.652217Z",
+   "icao24": "a765ec",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1200,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 122,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N576NN",
+   "type_code": "CRJ9"
+  },
+  {
+   "callsign": "JIA5213",
+   "description": "BOMBARDIER Regional Jet CRJ-900",
+   "duration_s": 639,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:10:38.620257Z",
+   "icao24": "a7e9e7",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": 1300,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 154,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N609NN",
+   "type_code": "CRJ9"
+  },
+  {
+   "callsign": "JIA5028",
+   "description": null,
+   "duration_s": 1456,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:24:16.178352Z",
+   "icao24": "a83ef5",
+   "ladd": false,
+   "leg": 1,
+   "max_alt_ft": 1200,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 160,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N630NN",
+   "type_code": "CRJ9"
+  },
+  {
+   "callsign": "JIA5027",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 1134,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:18:54.304691Z",
+   "icao24": "a9b007",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1075,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 169,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N723PS",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "AAL495",
+   "description": "AIRBUS A-319",
+   "duration_s": 1427,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:23:46.680000Z",
+   "icao24": "aa3994",
+   "ladd": false,
+   "leg": 5,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 56,
+   "on_ground": true,
+   "owner_operator": "BANK OF UTAH TRUSTEE",
+   "pia": false,
+   "registration": "N758US",
+   "type_code": "A319"
+  },
+  {
+   "callsign": "AAL3126",
+   "description": "BOEING 737-800",
+   "duration_s": 1991,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:33:10.957444Z",
+   "icao24": "ac22c5",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1275,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 212,
+   "on_ground": true,
+   "owner_operator": "BANK OF UTAH TRUSTEE",
+   "pia": false,
+   "registration": "N881NN",
+   "type_code": "B738"
+  },
+  {
+   "callsign": "AAL795",
+   "description": "BOEING 737-800",
+   "duration_s": 707,
+   "entry": "2026-09-24T14:00:00Z",
+   "exit": "2026-09-24T14:11:47.177284Z",
+   "icao24": "acbf63",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": 1300,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 170,
+   "on_ground": true,
+   "owner_operator": "UMB BANK NA TRUSTEE",
+   "pia": false,
+   "registration": "N920NN",
+   "type_code": "B738"
+  },
+  {
+   "callsign": "RPA4465",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 217,
+   "entry": "2026-09-24T14:00:02.696771Z",
+   "exit": "2026-09-24T14:03:39.780000Z",
+   "icao24": "a52cc8",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 25,
+   "military": false,
+   "min_alt_ft": -425,
+   "n_points_inside": 146,
+   "on_ground": true,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N432YX",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "JIA5528",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 1727,
+   "entry": "2026-09-24T14:00:14.230000Z",
+   "exit": "2026-09-24T14:29:01.594052Z",
+   "icao24": "a69b86",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": 1600,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 173,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N525AE",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "RPA5708",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 2857,
+   "entry": "2026-09-24T14:04:18.530000Z",
+   "exit": "2026-09-24T14:51:55.460000Z",
+   "icao24": "a22358",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 192,
+   "on_ground": true,
+   "owner_operator": "DELTA AIR LINES INC",
+   "pia": false,
+   "registration": "N237JQ",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "RPA4700",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 1762,
+   "entry": "2026-09-24T14:05:43.620000Z",
+   "exit": "2026-09-24T14:35:05.570378Z",
+   "icao24": "a00929",
+   "ladd": false,
+   "leg": 6,
+   "max_alt_ft": 1200,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 172,
+   "on_ground": true,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N101HQ",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "JIA5170",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 1830,
+   "entry": "2026-09-24T14:05:44.930000Z",
+   "exit": "2026-09-24T14:36:14.946033Z",
+   "icao24": "a67f2c",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 975,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 159,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N518AE",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "JIA5665",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 1820,
+   "entry": "2026-09-24T14:10:04.430000Z",
+   "exit": "2026-09-24T14:40:24.860294Z",
+   "icao24": "a63dc7",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1500,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 202,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N501BG",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "SWA1390",
+   "description": "BOEING 737-700",
+   "duration_s": 1095,
+   "entry": "2026-09-24T14:11:09.700000Z",
+   "exit": "2026-09-24T14:29:24.350000Z",
+   "icao24": "a1d93b",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 34,
+   "on_ground": true,
+   "owner_operator": "SOUTHWEST AIRLINES CO",
+   "pia": false,
+   "registration": "N218WN",
+   "type_code": "B737"
+  },
+  {
+   "callsign": "JZA821",
+   "description": "BOMBARDIER Regional Jet CRJ-900",
+   "duration_s": 219,
+   "entry": "2026-09-24T14:11:35.895908Z",
+   "exit": "2026-09-24T14:15:14.750000Z",
+   "icao24": "c01860",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": 50,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 156,
+   "on_ground": true,
+   "owner_operator": "Jazz Aviation LP",
+   "pia": false,
+   "registration": "C-FJFZ",
+   "type_code": "CRJ9"
+  },
+  {
+   "callsign": "AAL1718",
+   "description": "AIRBUS A-319",
+   "duration_s": 1863,
+   "entry": "2026-09-24T14:13:43.590529Z",
+   "exit": "2026-09-24T14:44:46.810000Z",
+   "icao24": "aa5d60",
+   "ladd": false,
+   "leg": 6,
+   "max_alt_ft": 50,
+   "military": false,
+   "min_alt_ft": -475,
+   "n_points_inside": 179,
+   "on_ground": true,
+   "owner_operator": "UMB BANK NA TRUSTEE",
+   "pia": false,
+   "registration": "N767UW",
+   "type_code": "A319"
+  },
+  {
+   "callsign": "JIA5221",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 1956,
+   "entry": "2026-09-24T14:14:05.310000Z",
+   "exit": "2026-09-24T14:46:41.461810Z",
+   "icao24": "a6bb97",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1200,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 182,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N533AE",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "RPA4436",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 1706,
+   "entry": "2026-09-24T14:14:27.020000Z",
+   "exit": "2026-09-24T14:42:52.542645Z",
+   "icao24": "a0433b",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1025,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 187,
+   "on_ground": true,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N116HQ",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "RPA4366",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 890,
+   "entry": "2026-09-24T14:14:43.280000Z",
+   "exit": "2026-09-24T14:29:32.884772Z",
+   "icao24": "a06703",
+   "ladd": false,
+   "leg": 5,
+   "max_alt_ft": 1250,
+   "military": false,
+   "min_alt_ft": -425,
+   "n_points_inside": 163,
+   "on_ground": true,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N125HQ",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "RPA4627",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 190,
+   "entry": "2026-09-24T14:14:58.113622Z",
+   "exit": "2026-09-24T14:18:08.460000Z",
+   "icao24": "a4e181",
+   "ladd": false,
+   "leg": 5,
+   "max_alt_ft": -25,
+   "military": false,
+   "min_alt_ft": -425,
+   "n_points_inside": 71,
+   "on_ground": true,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N413YX",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "JIA5231",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 620,
+   "entry": "2026-09-24T14:16:31.539297Z",
+   "exit": "2026-09-24T14:26:51.170000Z",
+   "icao24": "a69418",
+   "ladd": false,
+   "leg": 2,
+   "max_alt_ft": 75,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 170,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N523AE",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "JIA5023",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 921,
+   "entry": "2026-09-24T14:18:12.480805Z",
+   "exit": "2026-09-24T14:33:33.830000Z",
+   "icao24": "a68caa",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 50,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 127,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N521AE",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "JIA523T",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 339,
+   "entry": "2026-09-24T14:18:23.660000Z",
+   "exit": "2026-09-24T14:24:02.650000Z",
+   "icao24": "a6b0d2",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 3,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N530EA",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "AAL2848",
+   "description": "BOEING 737-800",
+   "duration_s": 239,
+   "entry": "2026-09-24T14:19:27.033242Z",
+   "exit": "2026-09-24T14:23:26.240000Z",
+   "icao24": "ad049a",
+   "ladd": false,
+   "leg": 1,
+   "max_alt_ft": 0,
+   "military": false,
+   "min_alt_ft": -450,
+   "n_points_inside": 120,
+   "on_ground": true,
+   "owner_operator": "BANK OF UTAH TRUSTEE",
+   "pia": false,
+   "registration": "N938NN",
+   "type_code": "B738"
+  },
+  {
+   "callsign": "GJS4516",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 911,
+   "entry": "2026-09-24T14:21:33.613178Z",
+   "exit": "2026-09-24T14:36:45.090000Z",
+   "icao24": "a6bfe8",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 75,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 243,
+   "on_ground": true,
+   "owner_operator": "SKYWEST AIRLINES INC",
+   "pia": false,
+   "registration": "N534GJ",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "UAL2774",
+   "description": "BOEING 737-800",
+   "duration_s": 1350,
+   "entry": "2026-09-24T14:22:33.100000Z",
+   "exit": "2026-09-24T14:45:02.768933Z",
+   "icao24": "aa56db",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": 1200,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 173,
+   "on_ground": true,
+   "owner_operator": "UNITED AIRLINES INC, ATTN TREASURER",
+   "pia": false,
+   "registration": "N76529",
+   "type_code": "B738"
+  },
+  {
+   "callsign": "RPA5852",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 958,
+   "entry": "2026-09-24T14:22:39.980000Z",
+   "exit": "2026-09-24T14:38:37.731493Z",
+   "icao24": "a1b449",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1275,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 111,
+   "on_ground": true,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N209JQ",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "AAL2345",
+   "description": "BOEING 737-800",
+   "duration_s": 229,
+   "entry": "2026-09-24T14:24:12.514939Z",
+   "exit": "2026-09-24T14:28:01.410000Z",
+   "icao24": "ab6fdd",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 25,
+   "military": false,
+   "min_alt_ft": -450,
+   "n_points_inside": 158,
+   "on_ground": true,
+   "owner_operator": "WILMINGTON TRUST CO TRUSTEE",
+   "pia": false,
+   "registration": "N836NN",
+   "type_code": "B738"
+  },
+  {
+   "callsign": "AAL1153",
+   "description": "AIRBUS A-319",
+   "duration_s": 2129,
+   "entry": "2026-09-24T14:24:31.040000Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "aa3994",
+   "ladd": false,
+   "leg": 6,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 67,
+   "on_ground": true,
+   "owner_operator": "BANK OF UTAH TRUSTEE",
+   "pia": false,
+   "registration": "N758US",
+   "type_code": "A319"
+  },
+  {
+   "callsign": "RPA4428",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 984,
+   "entry": "2026-09-24T14:25:41.330000Z",
+   "exit": "2026-09-24T14:42:05.286004Z",
+   "icao24": "a4f7cb",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": 1100,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 171,
+   "on_ground": true,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N419YX",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "N528BC",
+   "description": null,
+   "duration_s": 335,
+   "entry": "2026-09-24T14:26:08.191727Z",
+   "exit": "2026-09-24T14:31:43.580000Z",
+   "icao24": "a6a6c2",
+   "ladd": false,
+   "leg": 1,
+   "max_alt_ft": -25,
+   "military": false,
+   "min_alt_ft": -425,
+   "n_points_inside": 91,
+   "on_ground": true,
+   "owner_operator": "CANCELLED/NOT ASSIGNED",
+   "pia": false,
+   "registration": "N528BC",
+   "type_code": "B772"
+  },
+  {
+   "callsign": "ENY3824",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 218,
+   "entry": "2026-09-24T14:28:42.374976Z",
+   "exit": "2026-09-24T14:32:20.140000Z",
+   "icao24": "a1fc3b",
+   "ladd": false,
+   "leg": 1,
+   "max_alt_ft": 50,
+   "military": false,
+   "min_alt_ft": -425,
+   "n_points_inside": 122,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N227NN",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "JZA780",
+   "description": "BOMBARDIER Regional Jet CRJ-900",
+   "duration_s": 1649,
+   "entry": "2026-09-24T14:30:30.978654Z",
+   "exit": "2026-09-24T14:57:59.560000Z",
+   "icao24": "c01a5a",
+   "ladd": false,
+   "leg": 2,
+   "max_alt_ft": 75,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 230,
+   "on_ground": true,
+   "owner_operator": "Jazz Aviation LP",
+   "pia": false,
+   "registration": "C-FJZL",
+   "type_code": "CRJ9"
+  },
+  {
+   "callsign": "JIA5167",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 1421,
+   "entry": "2026-09-24T14:30:36.290000Z",
+   "exit": "2026-09-24T14:54:17.079872Z",
+   "icao24": "a984d1",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1150,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 177,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N712PS",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "SWA1390",
+   "description": "BOEING 737-700",
+   "duration_s": 1270,
+   "entry": "2026-09-24T14:31:04.840000Z",
+   "exit": "2026-09-24T14:52:15.202255Z",
+   "icao24": "a1d93b",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1350,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 140,
+   "on_ground": true,
+   "owner_operator": "SOUTHWEST AIRLINES CO",
+   "pia": false,
+   "registration": "N218WN",
+   "type_code": "B737"
+  },
+  {
+   "callsign": "DAL926",
+   "description": "AIRBUS A-319",
+   "duration_s": 1101,
+   "entry": "2026-09-24T14:31:53.390000Z",
+   "exit": "2026-09-24T14:50:14.741705Z",
+   "icao24": "a3d4c6",
+   "ladd": false,
+   "leg": 2,
+   "max_alt_ft": 1375,
+   "military": false,
+   "min_alt_ft": -425,
+   "n_points_inside": 163,
+   "on_ground": true,
+   "owner_operator": "DELTA AIR LINES INC",
+   "pia": false,
+   "registration": "N346NB",
+   "type_code": "A319"
+  },
+  {
+   "callsign": "JIA5306",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 305,
+   "entry": "2026-09-24T14:32:35.760504Z",
+   "exit": "2026-09-24T14:37:40.740000Z",
+   "icao24": "a69f9d",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": 50,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 133,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N526EA",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "GJS4400",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 860,
+   "entry": "2026-09-24T14:34:04.780000Z",
+   "exit": "2026-09-24T14:48:25.258728Z",
+   "icao24": "a6898d",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 1200,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 124,
+   "on_ground": true,
+   "owner_operator": "BANK OF UTAH TRUSTEE",
+   "pia": false,
+   "registration": "N520GJ",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "AAL1623",
+   "description": "BOEING 737-800",
+   "duration_s": 239,
+   "entry": "2026-09-24T14:34:05.054096Z",
+   "exit": "2026-09-24T14:38:04.270000Z",
+   "icao24": "ace96d",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": 25,
+   "military": false,
+   "min_alt_ft": -475,
+   "n_points_inside": 131,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N931AN",
+   "type_code": "B738"
+  },
+  {
+   "callsign": "FORGE31",
+   "description": "CESSNA 560 Citation Ultra",
+   "duration_s": 38,
+   "entry": "2026-09-24T14:34:11.454210Z",
+   "exit": "2026-09-24T14:34:49.469797Z",
+   "icao24": "ae093d",
+   "ladd": false,
+   "leg": 1,
+   "max_alt_ft": 6075,
+   "military": true,
+   "min_alt_ft": 4750,
+   "n_points_inside": 19,
+   "on_ground": false,
+   "owner_operator": null,
+   "pia": false,
+   "registration": "01-00301",
+   "type_code": "C560"
+  },
+  {
+   "callsign": "JBU2433",
+   "description": "AIRBUS A-320",
+   "duration_s": 1478,
+   "entry": "2026-09-24T14:35:21.510000Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "a88774",
+   "ladd": false,
+   "leg": 5,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 83,
+   "on_ground": true,
+   "owner_operator": "JETBLUE AIRWAYS CORP",
+   "pia": false,
+   "registration": "N649JB",
+   "type_code": "A320"
+  },
+  {
+   "callsign": "AAL3043",
+   "description": "AIRBUS A-320",
+   "duration_s": 1440,
+   "entry": "2026-09-24T14:36:00.130806Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "a02e0a",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": 50,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 154,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N110UW",
+   "type_code": "A320"
+  },
+  {
+   "callsign": "JIA5402",
+   "description": "BOMBARDIER Regional Jet CRJ-900",
+   "duration_s": 241,
+   "entry": "2026-09-24T14:37:56.970778Z",
+   "exit": "2026-09-24T14:41:57.560000Z",
+   "icao24": "a7d39d",
+   "ladd": false,
+   "leg": 5,
+   "max_alt_ft": 25,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 128,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N603NN",
+   "type_code": "CRJ9"
+  },
+  {
+   "callsign": "UAL1705",
+   "description": "BOEING 737-700",
+   "duration_s": 257,
+   "entry": "2026-09-24T14:39:37.701427Z",
+   "exit": "2026-09-24T14:43:55.200000Z",
+   "icao24": "a0bf26",
+   "ladd": false,
+   "leg": 2,
+   "max_alt_ft": 0,
+   "military": false,
+   "min_alt_ft": -500,
+   "n_points_inside": 164,
+   "on_ground": true,
+   "owner_operator": "UNITED AIRLINES INC",
+   "pia": false,
+   "registration": "N14704",
+   "type_code": "B737"
+  },
+  {
+   "callsign": "RPA4733",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 1161,
+   "entry": "2026-09-24T14:40:03.460000Z",
+   "exit": "2026-09-24T14:59:24.020000Z",
+   "icao24": "a52cc8",
+   "ladd": false,
+   "leg": 5,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 16,
+   "on_ground": true,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N432YX",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "RPA4754",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 494,
+   "entry": "2026-09-24T14:42:18.972035Z",
+   "exit": "2026-09-24T14:50:32.760000Z",
+   "icao24": "a5106e",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 0,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 167,
+   "on_ground": true,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N425YX",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "SWA3231",
+   "description": "BOEING 737-700",
+   "duration_s": 343,
+   "entry": "2026-09-24T14:44:05.058999Z",
+   "exit": "2026-09-24T14:49:48.550000Z",
+   "icao24": "a1ca5f",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": 0,
+   "military": false,
+   "min_alt_ft": -475,
+   "n_points_inside": 167,
+   "on_ground": true,
+   "owner_operator": "SOUTHWEST AIRLINES CO",
+   "pia": false,
+   "registration": "N214WN",
+   "type_code": "B737"
+  },
+  {
+   "callsign": "RPA4400",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 954,
+   "entry": "2026-09-24T14:44:06.400000Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "a09239",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 20,
+   "on_ground": true,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N136HQ",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "AAL3240",
+   "description": "AIRBUS A-319",
+   "duration_s": 845,
+   "entry": "2026-09-24T14:45:54.949182Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "a95a1c",
+   "ladd": false,
+   "leg": 6,
+   "max_alt_ft": 25,
+   "military": false,
+   "min_alt_ft": -475,
+   "n_points_inside": 188,
+   "on_ground": true,
+   "owner_operator": "UMB BANK TRUSTEE",
+   "pia": false,
+   "registration": "N701UW",
+   "type_code": "A319"
+  },
+  {
+   "callsign": "DAL2958",
+   "description": "AIRBUS A220-100",
+   "duration_s": 691,
+   "entry": "2026-09-24T14:47:42.217602Z",
+   "exit": "2026-09-24T14:59:13.480000Z",
+   "icao24": "a08e1e",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 50,
+   "military": false,
+   "min_alt_ft": -425,
+   "n_points_inside": 160,
+   "on_ground": true,
+   "owner_operator": "DELTA AIR LINES INC",
+   "pia": false,
+   "registration": "N135DQ",
+   "type_code": "BCS1"
+  },
+  {
+   "callsign": "UAL2190",
+   "description": "BOEING 737-700",
+   "duration_s": 676,
+   "entry": "2026-09-24T14:48:43.780000Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "a097ce",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 25,
+   "on_ground": true,
+   "owner_operator": "UNITED AIRLINES INC",
+   "pia": false,
+   "registration": "N13718",
+   "type_code": "B737"
+  },
+  {
+   "callsign": "JIA5307",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 229,
+   "entry": "2026-09-24T14:49:33.189337Z",
+   "exit": "2026-09-24T14:53:21.740000Z",
+   "icao24": "a682e3",
+   "ladd": false,
+   "leg": 2,
+   "max_alt_ft": 50,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 107,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N519AE",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "JIA5463",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 217,
+   "entry": "2026-09-24T14:51:41.345186Z",
+   "exit": "2026-09-24T14:55:18.170000Z",
+   "icao24": "a99ed2",
+   "ladd": false,
+   "leg": 2,
+   "max_alt_ft": 75,
+   "military": false,
+   "min_alt_ft": -375,
+   "n_points_inside": 145,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N719PS",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "JZA783",
+   "description": "BOMBARDIER Regional Jet CRJ-900",
+   "duration_s": 481,
+   "entry": "2026-09-24T14:51:59.110000Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "c01860",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 46,
+   "on_ground": true,
+   "owner_operator": "Jazz Aviation LP",
+   "pia": false,
+   "registration": "C-FJFZ",
+   "type_code": "CRJ9"
+  },
+  {
+   "callsign": "C102",
+   "description": "GULFSTREAM 5",
+   "duration_s": 195,
+   "entry": "2026-09-24T14:52:40.200000Z",
+   "exit": "2026-09-24T14:55:54.908652Z",
+   "icao24": "ae109a",
+   "ladd": false,
+   "leg": 2,
+   "max_alt_ft": 1700,
+   "military": true,
+   "min_alt_ft": -400,
+   "n_points_inside": 92,
+   "on_ground": true,
+   "owner_operator": null,
+   "pia": false,
+   "registration": "02",
+   "type_code": "GLF5"
+  },
+  {
+   "callsign": "SWA3066",
+   "description": null,
+   "duration_s": 266,
+   "entry": "2026-09-24T14:53:23.202350Z",
+   "exit": "2026-09-24T14:57:49.290000Z",
+   "icao24": "ac1a72",
+   "ladd": false,
+   "leg": 3,
+   "max_alt_ft": 25,
+   "military": false,
+   "min_alt_ft": -450,
+   "n_points_inside": 157,
+   "on_ground": true,
+   "owner_operator": "SOUTHWEST AIRLINES CO",
+   "pia": false,
+   "registration": "N8792Q",
+   "type_code": "B38M"
+  },
+  {
+   "callsign": "ENY4110",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 328,
+   "entry": "2026-09-24T14:54:32.180000Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "a1d873",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 36,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N218NN",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "RPA5742",
+   "description": "EMBRAER ERJ-170-100",
+   "duration_s": 241,
+   "entry": "2026-09-24T14:55:58.610000Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "ac159a",
+   "ladd": false,
+   "leg": 5,
+   "max_alt_ft": null,
+   "military": false,
+   "min_alt_ft": null,
+   "n_points_inside": 7,
+   "on_ground": true,
+   "owner_operator": "DELTA AIR LINES INC",
+   "pia": false,
+   "registration": "N878RW",
+   "type_code": "E170"
+  },
+  {
+   "callsign": "RPA5693",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 240,
+   "entry": "2026-09-24T14:55:59.505228Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "a23bfb",
+   "ladd": false,
+   "leg": 4,
+   "max_alt_ft": 50,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 138,
+   "on_ground": true,
+   "owner_operator": "DELTA AIR LINES INC",
+   "pia": false,
+   "registration": "N243JQ",
+   "type_code": "E75L"
+  },
+  {
+   "callsign": "JIA5108",
+   "description": "BOMBARDIER Regional Jet CRJ-700",
+   "duration_s": 129,
+   "entry": "2026-09-24T14:57:50.922061Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "a677be",
+   "ladd": false,
+   "leg": 5,
+   "max_alt_ft": 50,
+   "military": false,
+   "min_alt_ft": -400,
+   "n_points_inside": 108,
+   "on_ground": true,
+   "owner_operator": "AMERICAN AIRLINES INC",
+   "pia": false,
+   "registration": "N516AE",
+   "type_code": "CRJ7"
+  },
+  {
+   "callsign": "RPA4407",
+   "description": "EMBRAER ERJ-170-200 (long wing)",
+   "duration_s": 35,
+   "entry": "2026-09-24T14:59:25.229474Z",
+   "exit": "2026-09-24T15:00:00Z",
+   "icao24": "a07fa6",
+   "ladd": false,
+   "leg": 5,
+   "max_alt_ft": 50,
+   "military": false,
+   "min_alt_ft": -350,
+   "n_points_inside": 55,
+   "on_ground": false,
+   "owner_operator": "REPUBLIC AIRWAYS INC",
+   "pia": false,
+   "registration": "N131HQ",
+   "type_code": "E75L"
+  }
+ ],
+ "n_aircraft": 64,
+ "n_hits": 68,
+ "start": "2026-09-24T14:00:00Z"
+}

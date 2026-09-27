@@ -1,0 +1,96 @@
+# Dev stack. Everything runs on `aperture-internal` (internal: true => no route out, not even
+# to the Docker host). Prerequisite images come from bootstrap/ (see bootstrap/images.lock).
+#
+#   docker compose up -d --build              db -> loader (one-shot) -> backend
+#   docker compose run --rm probe <url>       curl from inside the internal network
+#   docker compose --profile test up -d db-test   fixtures DB for pytest on 127.0.0.1:55432
+name: aperture
+
+x-db: &db
+  image: timescale/timescaledb-ha:pg17@sha256:3e3440ab4c2aa585e743b1d8466cda9bbf18b6c598ec7806cf61e02fa5cd1d1a
+  # TimescaleDB phones home by default; telemetry off keeps the DB silent even off-network.
+  command: ["postgres", "-c", "timescaledb.telemetry_level=off"]
+  environment:
+    POSTGRES_USER: aperture
+    POSTGRES_PASSWORD: aperture
+    POSTGRES_DB: aperture
+  shm_size: 1g
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U aperture -d aperture -h 127.0.0.1"]
+    interval: 5s
+    timeout: 5s
+    retries: 60
+
+x-db-init: &db-init
+  # Mounted file-by-file: the image ships its own init scripts in the same directory.
+  - ./db/init/100_extensions.sql:/docker-entrypoint-initdb.d/100_extensions.sql:ro
+  - ./db/init/110_schema.sql:/docker-entrypoint-initdb.d/110_schema.sql:ro
+
+x-build: &build
+  context: .
+  network: none
+  args:
+    PY_DEPS: aperture/py-deps:latest
+
+networks:
+  internal:
+    name: aperture-internal
+    internal: true
+  test:
+    name: aperture-test
+
+volumes:
+  pgdata:
+
+services:
+  db:
+    <<: *db
+    volumes:
+      - pgdata:/home/postgres/pgdata
+      - ./db/init/100_extensions.sql:/docker-entrypoint-initdb.d/100_extensions.sql:ro
+      - ./db/init/110_schema.sql:/docker-entrypoint-initdb.d/110_schema.sql:ro
+    networks: [internal]
+
+  loader:
+    build:
+      <<: *build
+      dockerfile: db/loader/Dockerfile
+    image: aperture/loader:dev
+    environment:
+      DATABASE_URL: postgresql://aperture:aperture@db:5432/aperture
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [internal]
+    restart: "no"
+
+  backend:
+    build:
+      <<: *build
+      dockerfile: backend/Dockerfile
+    image: aperture/backend:dev
+    environment:
+      DATABASE_URL: postgresql://aperture:aperture@db:5432/aperture
+    depends_on:
+      db: { condition: service_healthy }
+      loader: { condition: service_completed_successfully }
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  probe:
+    image: curlimages/curl@sha256:58adaa4e8dca9c988bae2aba4ab3434a0bb2da16bbe3f92dec39ec7785166777
+    profiles: [tools]
+    entrypoint: ["curl"]
+    networks: [internal]
+
+  # Throwaway fixtures DB for pytest (host port on loopback only; tmpfs, no volume).
+  db-test:
+    <<: *db
+    profiles: [test]
+    tmpfs: ["/home/postgres/pgdata:uid=1000,gid=1000,mode=0700"]
+    volumes: *db-init
+    ports: ["127.0.0.1:55432:5432"]
+    networks: [test]
